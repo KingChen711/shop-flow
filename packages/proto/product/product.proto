@@ -17,6 +17,15 @@ service ProductService {
 }
 
 // ============================================
+// Common Messages
+// ============================================
+
+message KeyValue {
+  string key = 1;
+  string value = 2;
+}
+
+// ============================================
 // Product Messages
 // ============================================
 
@@ -26,7 +35,7 @@ message CreateProductRequest {
   double price = 3;
   string category_id = 4;
   repeated string image_urls = 5;
-  map<string, string> attributes = 6;
+  repeated KeyValue attributes = 6;
 }
 
 message GetProductRequest {
@@ -40,7 +49,7 @@ message UpdateProductRequest {
   optional double price = 4;
   optional string category_id = 5;
   repeated string image_urls = 6;
-  map<string, string> attributes = 7;
+  repeated KeyValue attributes = 7;
 }
 
 message DeleteProductRequest {
@@ -66,7 +75,7 @@ message ProductResponse {
   string category_id = 5;
   string category_name = 6;
   repeated string image_urls = 7;
-  map<string, string> attributes = 8;
+  repeated KeyValue attributes = 8;
   bool is_active = 9;
   string created_at = 10;
   string updated_at = 11;

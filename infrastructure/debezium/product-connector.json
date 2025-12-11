@@ -1,0 +1,31 @@
+{
+  "name": "product-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "shopflow-postgres-product",
+    "database.port": "5432",
+    "database.user": "shopflow",
+    "database.password": "shopflow123",
+    "database.dbname": "product_db",
+    "database.server.name": "product",
+    "topic.prefix": "product",
+    "table.include.list": "public.products,public.categories,public.outbox_events",
+    "plugin.name": "pgoutput",
+    "slot.name": "product_slot",
+    "publication.name": "product_publication",
+
+    "transforms": "outbox",
+    "transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",
+    "transforms.outbox.table.fields.additional.placement": "type:header:eventType",
+    "transforms.outbox.route.by.field": "aggregate_type",
+    "transforms.outbox.route.topic.replacement": "${routedByValue}.events",
+
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "false",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "false",
+
+    "tombstones.on.delete": "false",
+    "snapshot.mode": "initial"
+  }
+}
