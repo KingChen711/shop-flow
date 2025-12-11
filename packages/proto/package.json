@@ -1,0 +1,12 @@
+{
+  "name": "@shopflow/proto",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./index.js",
+  "scripts": {
+    "build": "echo 'Proto files ready'"
+  },
+  "files": [
+    "**/*.proto"
+  ]
+}

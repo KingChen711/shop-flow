@@ -1,0 +1,288 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # POSTGRESQL DATABASES (One per service)
+  # ============================================
+  postgres-user:
+    image: postgres:16-alpine
+    container_name: shopflow-postgres-user
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-shopflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shopflow123}
+      POSTGRES_DB: user_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-user-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U shopflow -d user_db']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shopflow-network
+
+  postgres-product:
+    image: postgres:16-alpine
+    container_name: shopflow-postgres-product
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-shopflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shopflow123}
+      POSTGRES_DB: product_db
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres-product-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U shopflow -d product_db']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shopflow-network
+
+  postgres-order:
+    image: postgres:16-alpine
+    container_name: shopflow-postgres-order
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-shopflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shopflow123}
+      POSTGRES_DB: order_db
+    ports:
+      - '5434:5432'
+    volumes:
+      - postgres-order-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U shopflow -d order_db']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shopflow-network
+
+  postgres-inventory:
+    image: postgres:16-alpine
+    container_name: shopflow-postgres-inventory
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-shopflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shopflow123}
+      POSTGRES_DB: inventory_db
+    ports:
+      - '5435:5432'
+    volumes:
+      - postgres-inventory-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U shopflow -d inventory_db']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shopflow-network
+
+  postgres-payment:
+    image: postgres:16-alpine
+    container_name: shopflow-postgres-payment
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-shopflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shopflow123}
+      POSTGRES_DB: payment_db
+    ports:
+      - '5436:5432'
+    volumes:
+      - postgres-payment-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U shopflow -d payment_db']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shopflow-network
+
+  # ============================================
+  # REDIS (Single instance for dev, Cluster for prod)
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: shopflow-redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shopflow-network
+
+  # ============================================
+  # KAFKA + ZOOKEEPER
+  # ============================================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: shopflow-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - '2181:2181'
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-log:/var/lib/zookeeper/log
+    networks:
+      - shopflow-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: shopflow-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - '9092:9092'
+      - '29092:29092'
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_DELETE_TOPIC_ENABLE: 'true'
+      KAFKA_LOG_RETENTION_HOURS: 168
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ['CMD', 'kafka-broker-api-versions', '--bootstrap-server', 'localhost:9092']
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    networks:
+      - shopflow-network
+
+  # Kafka UI for monitoring
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: shopflow-kafka-ui
+    depends_on:
+      - kafka
+    ports:
+      - '8080:8080'
+    environment:
+      KAFKA_CLUSTERS_0_NAME: shopflow
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - shopflow-network
+
+  # ============================================
+  # MINIO (S3-compatible object storage)
+  # ============================================
+  minio:
+    image: minio/minio:latest
+    container_name: shopflow-minio
+    command: server /data --console-address ":9001"
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - shopflow-network
+
+  # ============================================
+  # ELASTICSEARCH
+  # ============================================
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: shopflow-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+      - cluster.name=shopflow-cluster
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:9200/_cluster/health || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - shopflow-network
+
+  # ============================================
+  # DEBEZIUM (CDC - Change Data Capture)
+  # ============================================
+  debezium:
+    image: debezium/connect:2.4
+    container_name: shopflow-debezium
+    depends_on:
+      - kafka
+      - postgres-product
+    ports:
+      - '8083:8083'
+    environment:
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: debezium_configs
+      OFFSET_STORAGE_TOPIC: debezium_offsets
+      STATUS_STORAGE_TOPIC: debezium_statuses
+      BOOTSTRAP_SERVERS: kafka:29092
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8083/connectors']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - shopflow-network
+
+# ============================================
+# NETWORKS
+# ============================================
+networks:
+  shopflow-network:
+    driver: bridge
+    name: shopflow-network
+
+# ============================================
+# VOLUMES
+# ============================================
+volumes:
+  postgres-user-data:
+    name: shopflow-postgres-user-data
+  postgres-product-data:
+    name: shopflow-postgres-product-data
+  postgres-order-data:
+    name: shopflow-postgres-order-data
+  postgres-inventory-data:
+    name: shopflow-postgres-inventory-data
+  postgres-payment-data:
+    name: shopflow-postgres-payment-data
+  redis-data:
+    name: shopflow-redis-data
+  zookeeper-data:
+    name: shopflow-zookeeper-data
+  zookeeper-log:
+    name: shopflow-zookeeper-log
+  kafka-data:
+    name: shopflow-kafka-data
+  minio-data:
+    name: shopflow-minio-data
+  elasticsearch-data:
+    name: shopflow-elasticsearch-data

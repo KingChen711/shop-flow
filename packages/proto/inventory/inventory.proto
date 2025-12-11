@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package inventory;
+
+// Inventory Service Definition
+service InventoryService {
+  // Stock Management
+  rpc GetStock(GetStockRequest) returns (StockResponse);
+  rpc UpdateStock(UpdateStockRequest) returns (StockResponse);
+  rpc GetMultipleStock(GetMultipleStockRequest) returns (GetMultipleStockResponse);
+  
+  // Stock Reservation (for Saga)
+  rpc ReserveStock(ReserveStockRequest) returns (ReservationResponse);
+  rpc ConfirmReservation(ConfirmReservationRequest) returns (ReservationResponse);
+  rpc ReleaseReservation(ReleaseReservationRequest) returns (ReservationResponse);
+  
+  // Batch Operations
+  rpc ReserveMultipleStock(ReserveMultipleStockRequest) returns (ReserveMultipleStockResponse);
+  rpc ReleaseMultipleStock(ReleaseMultipleStockRequest) returns (ReleaseMultipleStockResponse);
+}
+
+// Reservation Status
+enum ReservationStatus {
+  RESERVATION_STATUS_UNSPECIFIED = 0;
+  RESERVATION_STATUS_RESERVED = 1;
+  RESERVATION_STATUS_CONFIRMED = 2;
+  RESERVATION_STATUS_RELEASED = 3;
+  RESERVATION_STATUS_EXPIRED = 4;
+}
+
+// ============================================
+// Stock Messages
+// ============================================
+
+message GetStockRequest {
+  string product_id = 1;
+}
+
+message GetMultipleStockRequest {
+  repeated string product_ids = 1;
+}
+
+message UpdateStockRequest {
+  string product_id = 1;
+  int32 quantity = 2;
+  string reason = 3;
+}
+
+message StockResponse {
+  string product_id = 1;
+  int32 total_stock = 2;
+  int32 reserved_stock = 3;
+  int32 available_stock = 4;
+  string updated_at = 5;
+}
+
+message GetMultipleStockResponse {
+  repeated StockResponse stocks = 1;
+}
+
+// ============================================
+// Reservation Messages
+// ============================================
+
+message ReserveStockRequest {
+  string order_id = 1;
+  string product_id = 2;
+  int32 quantity = 3;
+  int32 ttl_minutes = 4; // Time to live for reservation
+}
+
+message ConfirmReservationRequest {
+  string reservation_id = 1;
+}
+
+message ReleaseReservationRequest {
+  string reservation_id = 1;
+  string reason = 2;
+}
+
+message ReservationResponse {
+  string id = 1;
+  string order_id = 2;
+  string product_id = 3;
+  int32 quantity = 4;
+  ReservationStatus status = 5;
+  string created_at = 6;
+  string expires_at = 7;
+}
+
+// Batch Reservation
+message StockReservationItem {
+  string product_id = 1;
+  int32 quantity = 2;
+}
+
+message ReserveMultipleStockRequest {
+  string order_id = 1;
+  repeated StockReservationItem items = 2;
+  int32 ttl_minutes = 3;
+}
+
+message ReserveMultipleStockResponse {
+  bool success = 1;
+  repeated ReservationResponse reservations = 2;
+  repeated string failed_product_ids = 3;
+  string error_message = 4;
+}
+
+message ReleaseMultipleStockRequest {
+  string order_id = 1;
+  repeated string reservation_ids = 2;
+  string reason = 3;
+}
+
+message ReleaseMultipleStockResponse {
+  bool success = 1;
+  repeated string released_reservation_ids = 2;
+}
+

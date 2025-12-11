@@ -1,12 +1,22 @@
 {
   "name": "shopflow",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:services": "turbo run dev --filter=@shopflow/*-service",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
+    "check-types": "turbo run check-types",
+    "test": "turbo run test",
+    "proto:generate": "turbo run proto:generate",
+    "infra:up": "docker-compose -f infrastructure/docker/docker-compose.yml up -d",
+    "infra:down": "docker-compose -f infrastructure/docker/docker-compose.yml down",
+    "infra:logs": "docker-compose -f infrastructure/docker/docker-compose.yml logs -f",
+    "infra:ps": "docker-compose -f infrastructure/docker/docker-compose.yml ps",
+    "infra:reset": "docker-compose -f infrastructure/docker/docker-compose.yml down -v && docker-compose -f infrastructure/docker/docker-compose.yml up -d"
   },
   "devDependencies": {
     "prettier": "^3.7.4",

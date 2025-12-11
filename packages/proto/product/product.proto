@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+package product;
+
+// Product Service Definition
+service ProductService {
+  rpc CreateProduct(CreateProductRequest) returns (ProductResponse);
+  rpc GetProduct(GetProductRequest) returns (ProductResponse);
+  rpc UpdateProduct(UpdateProductRequest) returns (ProductResponse);
+  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
+  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
+  
+  // Categories
+  rpc CreateCategory(CreateCategoryRequest) returns (CategoryResponse);
+  rpc GetCategory(GetCategoryRequest) returns (CategoryResponse);
+  rpc ListCategories(ListCategoriesRequest) returns (ListCategoriesResponse);
+}
+
+// ============================================
+// Product Messages
+// ============================================
+
+message CreateProductRequest {
+  string name = 1;
+  string description = 2;
+  double price = 3;
+  string category_id = 4;
+  repeated string image_urls = 5;
+  map<string, string> attributes = 6;
+}
+
+message GetProductRequest {
+  string product_id = 1;
+}
+
+message UpdateProductRequest {
+  string product_id = 1;
+  optional string name = 2;
+  optional string description = 3;
+  optional double price = 4;
+  optional string category_id = 5;
+  repeated string image_urls = 6;
+  map<string, string> attributes = 7;
+}
+
+message DeleteProductRequest {
+  string product_id = 1;
+}
+
+message ListProductsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  optional string category_id = 3;
+  optional string search = 4;
+  optional double min_price = 5;
+  optional double max_price = 6;
+  optional string sort_by = 7;
+  optional string sort_order = 8;
+}
+
+message ProductResponse {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  string category_id = 5;
+  string category_name = 6;
+  repeated string image_urls = 7;
+  map<string, string> attributes = 8;
+  bool is_active = 9;
+  string created_at = 10;
+  string updated_at = 11;
+}
+
+message DeleteProductResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ListProductsResponse {
+  repeated ProductResponse products = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+}
+
+// ============================================
+// Category Messages
+// ============================================
+
+message CreateCategoryRequest {
+  string name = 1;
+  string description = 2;
+  optional string parent_id = 3;
+}
+
+message GetCategoryRequest {
+  string category_id = 1;
+}
+
+message ListCategoriesRequest {
+  optional string parent_id = 1;
+}
+
+message CategoryResponse {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string parent_id = 4;
+  string created_at = 5;
+}
+
+message ListCategoriesResponse {
+  repeated CategoryResponse categories = 1;
+}
+

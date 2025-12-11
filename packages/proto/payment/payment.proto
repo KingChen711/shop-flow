@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package payment;
+
+// Payment Service Definition
+service PaymentService {
+  rpc ProcessPayment(ProcessPaymentRequest) returns (PaymentResponse);
+  rpc GetPayment(GetPaymentRequest) returns (PaymentResponse);
+  rpc GetPaymentByOrder(GetPaymentByOrderRequest) returns (PaymentResponse);
+  rpc RefundPayment(RefundPaymentRequest) returns (PaymentResponse);
+  rpc ListPayments(ListPaymentsRequest) returns (ListPaymentsResponse);
+}
+
+// Payment Status
+enum PaymentStatus {
+  PAYMENT_STATUS_UNSPECIFIED = 0;
+  PAYMENT_STATUS_PENDING = 1;
+  PAYMENT_STATUS_PROCESSING = 2;
+  PAYMENT_STATUS_COMPLETED = 3;
+  PAYMENT_STATUS_FAILED = 4;
+  PAYMENT_STATUS_REFUNDED = 5;
+  PAYMENT_STATUS_PARTIALLY_REFUNDED = 6;
+}
+
+// Payment Method
+enum PaymentMethod {
+  PAYMENT_METHOD_UNSPECIFIED = 0;
+  PAYMENT_METHOD_CREDIT_CARD = 1;
+  PAYMENT_METHOD_DEBIT_CARD = 2;
+  PAYMENT_METHOD_BANK_TRANSFER = 3;
+  PAYMENT_METHOD_WALLET = 4;
+}
+
+// ============================================
+// Request Messages
+// ============================================
+
+message ProcessPaymentRequest {
+  string order_id = 1;
+  string user_id = 2;
+  double amount = 3;
+  string currency = 4;
+  PaymentMethod payment_method = 5;
+  map<string, string> payment_details = 6;
+  string idempotency_key = 7;
+}
+
+message GetPaymentRequest {
+  string payment_id = 1;
+}
+
+message GetPaymentByOrderRequest {
+  string order_id = 1;
+}
+
+message RefundPaymentRequest {
+  string payment_id = 1;
+  double amount = 2;
+  string reason = 3;
+}
+
+message ListPaymentsRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+  optional PaymentStatus status = 4;
+}
+
+// ============================================
+// Response Messages
+// ============================================
+
+message PaymentResponse {
+  string id = 1;
+  string order_id = 2;
+  string user_id = 3;
+  double amount = 4;
+  string currency = 5;
+  PaymentStatus status = 6;
+  PaymentMethod payment_method = 7;
+  string transaction_id = 8;
+  string error_message = 9;
+  double refunded_amount = 10;
+  string created_at = 11;
+  string updated_at = 12;
+}
+
+message ListPaymentsResponse {
+  repeated PaymentResponse payments = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+}
+
