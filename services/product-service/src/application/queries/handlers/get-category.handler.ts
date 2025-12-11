@@ -2,9 +2,9 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { NotFoundError } from '@shopflow/shared-utils';
 import { GetCategoryQuery } from '../get-category.query';
-import { Category } from '../../../domain/entities/category.entity';
-import { ICategoryRepository } from '../../../domain/repositories/category.repository.interface';
-import { RedisService } from '../../../infrastructure/redis/redis.service';
+import { Category } from '@domain/entities/category.entity';
+import { ICategoryRepository } from '@domain/repositories/category.repository.interface';
+import { RedisService } from '@infrastructure/redis/redis.service';
 
 @QueryHandler(GetCategoryQuery)
 export class GetCategoryHandler implements IQueryHandler<GetCategoryQuery> {

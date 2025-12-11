@@ -4,17 +4,17 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { status } from '@grpc/grpc-js';
 
 // Commands
-import { CreateProductCommand } from '../../application/commands/create-product.command';
-import { UpdateProductCommand } from '../../application/commands/update-product.command';
-import { DeleteProductCommand } from '../../application/commands/delete-product.command';
+import { CreateProductCommand } from '@application/commands/create-product.command';
+import { UpdateProductCommand } from '@application/commands/update-product.command';
+import { DeleteProductCommand } from '@application/commands/delete-product.command';
 
 // Queries
-import { GetProductQuery } from '../../application/queries/get-product.query';
-import { ListProductsQuery } from '../../application/queries/list-products.query';
-import { ListProductsResult } from '../../application/queries/handlers/list-products.handler';
+import { GetProductQuery } from '@application/queries/get-product.query';
+import { ListProductsQuery } from '@application/queries/list-products.query';
+import { ListProductsResult } from '@application/queries/handlers/list-products.handler';
 
 // Domain
-import { Product } from '../../domain/entities/product.entity';
+import { Product } from '@domain/entities/product.entity';
 
 // Error handling
 import { NotFoundError, ValidationError } from '@shopflow/shared-utils';

@@ -2,9 +2,9 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { NotFoundError } from '@shopflow/shared-utils';
 import { GetProductQuery } from '../get-product.query';
-import { Product } from '../../../domain/entities/product.entity';
-import { IProductRepository } from '../../../domain/repositories/product.repository.interface';
-import { RedisService } from '../../../infrastructure/redis/redis.service';
+import { Product } from '@domain/entities/product.entity';
+import { IProductRepository } from '@domain/repositories/product.repository.interface';
+import { RedisService } from '@infrastructure/redis/redis.service';
 
 @QueryHandler(GetProductQuery)
 export class GetProductHandler implements IQueryHandler<GetProductQuery> {

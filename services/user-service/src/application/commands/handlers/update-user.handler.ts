@@ -2,10 +2,10 @@ import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { NotFoundError } from '@shopflow/shared-utils';
 import { UpdateUserCommand } from '../update-user.command';
-import { User } from '../../../domain/entities/user.entity';
-import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
-import { UserUpdatedEvent } from '../../../domain/events/user-created.event';
-import { KafkaProducerService } from '../../../infrastructure/kafka/kafka-producer.service';
+import { User } from '@domain/entities/user.entity';
+import { IUserRepository } from '@domain/repositories/user.repository.interface';
+import { UserUpdatedEvent } from '@domain/events/user-created.event';
+import { KafkaProducerService } from '@infrastructure/kafka/kafka-producer.service';
 
 @CommandHandler(UpdateUserCommand)
 export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {

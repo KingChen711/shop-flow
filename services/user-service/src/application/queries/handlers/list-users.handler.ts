@@ -1,8 +1,8 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { ListUsersQuery } from '../list-users.query';
-import { User } from '../../../domain/entities/user.entity';
-import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
+import { User } from '@domain/entities/user.entity';
+import { IUserRepository } from '@domain/repositories/user.repository.interface';
 
 export interface ListUsersResult {
   users: User[];

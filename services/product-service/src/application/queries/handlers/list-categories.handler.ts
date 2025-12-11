@@ -1,9 +1,9 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { ListCategoriesQuery } from '../list-categories.query';
-import { Category } from '../../../domain/entities/category.entity';
-import { ICategoryRepository } from '../../../domain/repositories/category.repository.interface';
-import { RedisService } from '../../../infrastructure/redis/redis.service';
+import { Category } from '@domain/entities/category.entity';
+import { ICategoryRepository } from '@domain/repositories/category.repository.interface';
+import { RedisService } from '@infrastructure/redis/redis.service';
 
 @QueryHandler(ListCategoriesQuery)
 export class ListCategoriesHandler implements IQueryHandler<ListCategoriesQuery> {

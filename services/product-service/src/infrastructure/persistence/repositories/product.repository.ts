@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Product } from '../../../domain/entities/product.entity';
+import { Product } from '@domain/entities/product.entity';
 import {
   IProductRepository,
   ProductFilters,
-} from '../../../domain/repositories/product.repository.interface';
+} from '@domain/repositories/product.repository.interface';
 import { ProductEntity } from '../entities/product.entity';
 
 @Injectable()

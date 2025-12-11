@@ -2,9 +2,9 @@ import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { NotFoundError } from '@shopflow/shared-utils';
 import { CreateCategoryCommand } from '../create-category.command';
-import { Category } from '../../../domain/entities/category.entity';
-import { ICategoryRepository } from '../../../domain/repositories/category.repository.interface';
-import { CategoryCreatedEvent } from '../../../domain/events/category.events';
+import { Category } from '@domain/entities/category.entity';
+import { ICategoryRepository } from '@domain/repositories/category.repository.interface';
+import { CategoryCreatedEvent } from '@domain/events/category.events';
 
 @CommandHandler(CreateCategoryCommand)
 export class CreateCategoryHandler implements ICommandHandler<CreateCategoryCommand> {

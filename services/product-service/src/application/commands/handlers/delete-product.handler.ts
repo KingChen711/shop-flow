@@ -4,10 +4,10 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { NotFoundError } from '@shopflow/shared-utils';
 import { DeleteProductCommand } from '../delete-product.command';
-import { IProductRepository } from '../../../domain/repositories/product.repository.interface';
-import { ProductDeletedEvent } from '../../../domain/events/product.events';
-import { OutboxService } from '../../../infrastructure/outbox/outbox.service';
-import { ProductEntity } from '../../../infrastructure/persistence/entities/product.entity';
+import { IProductRepository } from '@domain/repositories/product.repository.interface';
+import { ProductDeletedEvent } from '@domain/events/product.events';
+import { OutboxService } from '@infrastructure/outbox/outbox.service';
+import { ProductEntity } from '@infrastructure/persistence/entities/product.entity';
 
 @CommandHandler(DeleteProductCommand)
 export class DeleteProductHandler implements ICommandHandler<DeleteProductCommand> {

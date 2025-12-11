@@ -2,9 +2,9 @@ import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { NotFoundError } from '@shopflow/shared-utils';
 import { DeleteUserCommand } from '../delete-user.command';
-import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
-import { UserDeletedEvent } from '../../../domain/events/user-created.event';
-import { KafkaProducerService } from '../../../infrastructure/kafka/kafka-producer.service';
+import { IUserRepository } from '@domain/repositories/user.repository.interface';
+import { UserDeletedEvent } from '@domain/events/user-created.event';
+import { KafkaProducerService } from '@infrastructure/kafka/kafka-producer.service';
 
 @CommandHandler(DeleteUserCommand)
 export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {

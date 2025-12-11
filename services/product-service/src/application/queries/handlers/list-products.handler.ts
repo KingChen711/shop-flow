@@ -1,11 +1,11 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { ListProductsQuery } from '../list-products.query';
-import { Product } from '../../../domain/entities/product.entity';
+import { Product } from '@domain/entities/product.entity';
 import {
   IProductRepository,
   ProductFilters,
-} from '../../../domain/repositories/product.repository.interface';
+} from '@domain/repositories/product.repository.interface';
 
 export interface ListProductsResult {
   products: Product[];

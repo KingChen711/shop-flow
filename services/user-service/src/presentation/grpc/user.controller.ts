@@ -4,21 +4,21 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { status } from '@grpc/grpc-js';
 
 // Commands
-import { CreateUserCommand } from '../../application/commands/create-user.command';
-import { UpdateUserCommand } from '../../application/commands/update-user.command';
-import { DeleteUserCommand } from '../../application/commands/delete-user.command';
+import { CreateUserCommand } from '@application/commands/create-user.command';
+import { UpdateUserCommand } from '@application/commands/update-user.command';
+import { DeleteUserCommand } from '@application/commands/delete-user.command';
 
 // Queries
-import { GetUserQuery } from '../../application/queries/get-user.query';
-import { GetUserByEmailQuery } from '../../application/queries/get-user-by-email.query';
-import { ListUsersQuery } from '../../application/queries/list-users.query';
-import { ListUsersResult } from '../../application/queries/handlers/list-users.handler';
+import { GetUserQuery } from '@application/queries/get-user.query';
+import { GetUserByEmailQuery } from '@application/queries/get-user-by-email.query';
+import { ListUsersQuery } from '@application/queries/list-users.query';
+import { ListUsersResult } from '@application/queries/handlers/list-users.handler';
 
 // Services
-import { AuthService } from '../../application/services/auth.service';
+import { AuthService } from '@application/services/auth.service';
 
 // Domain
-import { User } from '../../domain/entities/user.entity';
+import { User } from '@domain/entities/user.entity';
 
 // Error handling
 import {

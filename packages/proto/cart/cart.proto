@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package cart;
+
+// Cart Service Definition
+service CartService {
+  // Cart Operations
+  rpc GetCart(GetCartRequest) returns (CartResponse);
+  rpc AddItem(AddItemRequest) returns (CartResponse);
+  rpc UpdateItemQuantity(UpdateItemQuantityRequest) returns (CartResponse);
+  rpc RemoveItem(RemoveItemRequest) returns (CartResponse);
+  rpc ClearCart(ClearCartRequest) returns (ClearCartResponse);
+  
+  // Cart Metadata
+  rpc GetCartSummary(GetCartSummaryRequest) returns (CartSummaryResponse);
+}
+
+// ============================================
+// Request Messages
+// ============================================
+
+message GetCartRequest {
+  string user_id = 1;
+}
+
+message AddItemRequest {
+  string user_id = 1;
+  string product_id = 2;
+  string product_name = 3;
+  double price = 4;
+  int32 quantity = 5;
+  string image_url = 6;
+}
+
+message UpdateItemQuantityRequest {
+  string user_id = 1;
+  string product_id = 2;
+  int32 quantity = 3;
+}
+
+message RemoveItemRequest {
+  string user_id = 1;
+  string product_id = 2;
+}
+
+message ClearCartRequest {
+  string user_id = 1;
+}
+
+message GetCartSummaryRequest {
+  string user_id = 1;
+}
+
+// ============================================
+// Response Messages
+// ============================================
+
+message CartItem {
+  string product_id = 1;
+  string product_name = 2;
+  double price = 3;
+  int32 quantity = 4;
+  string image_url = 5;
+  double subtotal = 6;
+}
+
+message CartResponse {
+  string user_id = 1;
+  repeated CartItem items = 2;
+  double total = 3;
+  int32 item_count = 4;
+  string updated_at = 5;
+}
+
+message ClearCartResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message CartSummaryResponse {
+  string user_id = 1;
+  int32 item_count = 2;
+  double total = 3;
+}

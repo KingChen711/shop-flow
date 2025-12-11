@@ -4,12 +4,12 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { NotFoundError } from '@shopflow/shared-utils';
 import { CreateProductCommand } from '../create-product.command';
-import { Product } from '../../../domain/entities/product.entity';
-import { IProductRepository } from '../../../domain/repositories/product.repository.interface';
-import { ICategoryRepository } from '../../../domain/repositories/category.repository.interface';
-import { ProductCreatedEvent } from '../../../domain/events/product.events';
-import { OutboxService } from '../../../infrastructure/outbox/outbox.service';
-import { ProductEntity } from '../../../infrastructure/persistence/entities/product.entity';
+import { Product } from '@domain/entities/product.entity';
+import { IProductRepository } from '@domain/repositories/product.repository.interface';
+import { ICategoryRepository } from '@domain/repositories/category.repository.interface';
+import { ProductCreatedEvent } from '@domain/events/product.events';
+import { OutboxService } from '@infrastructure/outbox/outbox.service';
+import { ProductEntity } from '@infrastructure/persistence/entities/product.entity';
 
 @CommandHandler(CreateProductCommand)
 export class CreateProductHandler implements ICommandHandler<CreateProductCommand> {

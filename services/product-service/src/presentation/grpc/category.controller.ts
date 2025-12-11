@@ -4,14 +4,14 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { status } from '@grpc/grpc-js';
 
 // Commands
-import { CreateCategoryCommand } from '../../application/commands/create-category.command';
+import { CreateCategoryCommand } from '@application/commands/create-category.command';
 
 // Queries
-import { GetCategoryQuery } from '../../application/queries/get-category.query';
-import { ListCategoriesQuery } from '../../application/queries/list-categories.query';
+import { GetCategoryQuery } from '@application/queries/get-category.query';
+import { ListCategoriesQuery } from '@application/queries/list-categories.query';
 
 // Domain
-import { Category } from '../../domain/entities/category.entity';
+import { Category } from '@domain/entities/category.entity';
 
 // Error handling
 import { NotFoundError, ValidationError } from '@shopflow/shared-utils';

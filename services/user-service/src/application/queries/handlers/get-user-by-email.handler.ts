@@ -2,8 +2,8 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { NotFoundError } from '@shopflow/shared-utils';
 import { GetUserByEmailQuery } from '../get-user-by-email.query';
-import { User } from '../../../domain/entities/user.entity';
-import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
+import { User } from '@domain/entities/user.entity';
+import { IUserRepository } from '@domain/repositories/user.repository.interface';
 
 @QueryHandler(GetUserByEmailQuery)
 export class GetUserByEmailHandler implements IQueryHandler<GetUserByEmailQuery> {

@@ -2,13 +2,13 @@ import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { ConflictError } from '@shopflow/shared-utils';
 import { CreateUserCommand } from '../create-user.command';
-import { User } from '../../../domain/entities/user.entity';
-import { Email } from '../../../domain/value-objects/email.vo';
-import { Password } from '../../../domain/value-objects/password.vo';
-import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
+import { User } from '@domain/entities/user.entity';
+import { Email } from '@domain/value-objects/email.vo';
+import { Password } from '@domain/value-objects/password.vo';
+import { IUserRepository } from '@domain/repositories/user.repository.interface';
 import { PasswordService } from '../../services/password.service';
-import { UserCreatedEvent } from '../../../domain/events/user-created.event';
-import { KafkaProducerService } from '../../../infrastructure/kafka/kafka-producer.service';
+import { UserCreatedEvent } from '@domain/events/user-created.event';
+import { KafkaProducerService } from '@infrastructure/kafka/kafka-producer.service';
 
 @CommandHandler(CreateUserCommand)
 export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {

@@ -2,8 +2,8 @@ import { Injectable, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 import { UnauthorizedError } from '@shopflow/shared-utils';
-import { User } from '../../domain/entities/user.entity';
-import { IUserRepository } from '../../domain/repositories/user.repository.interface';
+import { User } from '@domain/entities/user.entity';
+import { IUserRepository } from '@domain/repositories/user.repository.interface';
 import { PasswordService } from './password.service';
 
 export interface TokenPayload {
