@@ -104,57 +104,57 @@ A full-featured e-commerce platform built with microservices architecture, desig
 
 ### Monorepo Management
 
-| Technology | Purpose |
-|------------|---------|
+| Technology    | Purpose                                            |
+| ------------- | -------------------------------------------------- |
 | **Turborepo** | Monorepo build system, caching, task orchestration |
 
 ### Frontend
 
-| Technology | Purpose |
-|------------|---------|
-| **Next.js 15** | BFF (Backend for Frontend), SSR, Admin Dashboard |
-| **React** | UI Components |
-| **TailwindCSS** | Styling |
+| Technology      | Purpose                                          |
+| --------------- | ------------------------------------------------ |
+| **Next.js 15**  | BFF (Backend for Frontend), SSR, Admin Dashboard |
+| **React**       | UI Components                                    |
+| **TailwindCSS** | Styling                                          |
 
 ### Backend (Microservices)
 
-| Technology | Purpose |
-|------------|---------|
-| **NestJS** | Microservices framework |
-| **gRPC** | Inter-service communication |
+| Technology       | Purpose                       |
+| ---------------- | ----------------------------- |
+| **NestJS**       | Microservices framework       |
+| **gRPC**         | Inter-service communication   |
 | **gRPC-Gateway** | HTTP REST to gRPC translation |
-| **TypeScript** | Type-safe development |
+| **TypeScript**   | Type-safe development         |
 
 ### Databases & Storage
 
-| Technology | Purpose |
-|------------|---------|
-| **PostgreSQL** | Primary database (per service) |
-| **Redis Cluster** | Caching, session storage |
-| **Redis Sentinel** | High availability for Redis |
-| **MinIO** | S3-compatible object storage |
-| **Elasticsearch** | Full-text search |
+| Technology         | Purpose                        |
+| ------------------ | ------------------------------ |
+| **PostgreSQL**     | Primary database (per service) |
+| **Redis Cluster**  | Caching, session storage       |
+| **Redis Sentinel** | High availability for Redis    |
+| **MinIO**          | S3-compatible object storage   |
+| **Elasticsearch**  | Full-text search               |
 
 ### Message Broker & Event Streaming
 
-| Technology | Purpose |
-|------------|---------|
+| Technology       | Purpose                              |
+| ---------------- | ------------------------------------ |
 | **Apache Kafka** | Event streaming, async communication |
-| **Debezium** | Change Data Capture (CDC) |
+| **Debezium**     | Change Data Capture (CDC)            |
 
 ### Infrastructure & DevOps
 
-| Technology | Purpose |
-|------------|---------|
-| **Kubernetes** | Container orchestration |
-| **NGINX Ingress** | Ingress controller, load balancing |
-| **Docker** | Containerization |
-| **Helm** | Kubernetes package manager |
-| **AWS EKS** | Managed Kubernetes |
-| **AWS RDS** | Managed PostgreSQL |
-| **AWS ElastiCache** | Managed Redis |
-| **AWS MSK** | Managed Kafka |
-| **AWS S3** | Object storage (production) |
+| Technology          | Purpose                            |
+| ------------------- | ---------------------------------- |
+| **Kubernetes**      | Container orchestration            |
+| **NGINX Ingress**   | Ingress controller, load balancing |
+| **Docker**          | Containerization                   |
+| **Helm**            | Kubernetes package manager         |
+| **AWS EKS**         | Managed Kubernetes                 |
+| **AWS RDS**         | Managed PostgreSQL                 |
+| **AWS ElastiCache** | Managed Redis                      |
+| **AWS MSK**         | Managed Kafka                      |
+| **AWS S3**          | Object storage (production)        |
 
 ---
 
@@ -183,6 +183,7 @@ A full-featured e-commerce platform built with microservices architecture, desig
 ```
 
 **Responsibilities:**
+
 - User registration & authentication
 - Profile management
 - JWT token management
@@ -191,6 +192,7 @@ A full-featured e-commerce platform built with microservices architecture, desig
 **Database:** PostgreSQL (users, roles, permissions)
 
 **Patterns Applied:**
+
 - Clean Architecture
 - DDD (Aggregates, Value Objects, Domain Events)
 - CQRS (Separate read/write models)
@@ -214,6 +216,7 @@ A full-featured e-commerce platform built with microservices architecture, desig
 ```
 
 **Responsibilities:**
+
 - Product CRUD operations
 - Category management
 - Product images (MinIO integration)
@@ -222,6 +225,7 @@ A full-featured e-commerce platform built with microservices architecture, desig
 **Database:** PostgreSQL (products, categories)
 
 **Patterns Applied:**
+
 - Outbox Pattern (reliable event publishing)
 - CDC with Debezium (sync to Elasticsearch)
 - CQRS (Read from Elasticsearch, Write to PostgreSQL)
@@ -253,6 +257,7 @@ A full-featured e-commerce platform built with microservices architecture, desig
 ```
 
 **Responsibilities:**
+
 - Order creation & management
 - Order state machine
 - Saga orchestration for distributed transactions
@@ -260,6 +265,7 @@ A full-featured e-commerce platform built with microservices architecture, desig
 **Database:** PostgreSQL (orders, order_items, saga_state)
 
 **Patterns Applied:**
+
 - **Saga Pattern** (Orchestration-based)
   - Create Order → Reserve Inventory → Process Payment → Confirm Order
   - Compensation: Release Inventory → Refund Payment → Cancel Order
@@ -287,6 +293,7 @@ A full-featured e-commerce platform built with microservices architecture, desig
 ```
 
 **Responsibilities:**
+
 - Payment processing
 - Refund handling
 - Payment history
@@ -294,6 +301,7 @@ A full-featured e-commerce platform built with microservices architecture, desig
 **Database:** PostgreSQL (payments, transactions)
 
 **Patterns Applied:**
+
 - Saga participant (compensatable transaction)
 - Idempotency keys for payment retry
 
@@ -318,6 +326,7 @@ A full-featured e-commerce platform built with microservices architecture, desig
 ```
 
 **Responsibilities:**
+
 - Stock management
 - Stock reservation (with distributed lock)
 - Low stock alerts
@@ -325,6 +334,7 @@ A full-featured e-commerce platform built with microservices architecture, desig
 **Database:** PostgreSQL (inventory, reservations)
 
 **Patterns Applied:**
+
 - **Distributed Lock** (Redis Redlock algorithm)
 - Saga participant
 - Optimistic locking
@@ -352,6 +362,7 @@ A full-featured e-commerce platform built with microservices architecture, desig
 ```
 
 **Responsibilities:**
+
 - Email notifications
 - SMS notifications
 - Push notifications
@@ -375,6 +386,7 @@ A full-featured e-commerce platform built with microservices architecture, desig
 ```
 
 **Responsibilities:**
+
 - Shopping cart management
 - Cart persistence (Redis)
 - Cart expiration handling
@@ -397,6 +409,7 @@ A full-featured e-commerce platform built with microservices architecture, desig
 ```
 
 **Responsibilities:**
+
 - Full-text product search
 - Faceted search
 - Search suggestions
@@ -404,6 +417,7 @@ A full-featured e-commerce platform built with microservices architecture, desig
 **Database:** Elasticsearch (product index)
 
 **Patterns Applied:**
+
 - CDC consumer (Debezium → Kafka → Elasticsearch)
 - CQRS read model
 
@@ -425,6 +439,7 @@ A full-featured e-commerce platform built with microservices architecture, desig
 ```
 
 **Responsibilities:**
+
 - File upload/download
 - Image processing & thumbnails
 - Presigned URLs
@@ -535,8 +550,8 @@ A full-featured e-commerce platform built with microservices architecture, desig
 │   │  └─────┬──────┘  │                  │  └─────┬──────┘  │                │
 │   │        │         │                  │        │         │                │
 │   │        ▼         │                  │        ▼         │                │
-│   │  ┌────────────┐  │   CDC/Events    │  ┌────────────┐  │                 │
-│   │  │ PostgreSQL │──┼────────────────▶│  │Elasticsearch│  │                │
+│   │  ┌────────────┐  │   CDC/Events     │  ┌────────────┐  │                │
+│   │  │ PostgreSQL │──┼────────────────▶ │  │Elasticsearch│ │                │
 │   │  │  (Write)   │  │                  │  │   (Read)   │  │                │
 │   │  └────────────┘  │                  │  └────────────┘  │                │
 │   │                  │                  │                  │                │
@@ -552,17 +567,17 @@ A full-featured e-commerce platform built with microservices architecture, desig
 async reserveStock(productId: string, quantity: number) {
   const lockKey = `lock:inventory:${productId}`;
   const lock = await this.redlock.acquire([lockKey], 5000);
-  
+
   try {
     const inventory = await this.inventoryRepo.findByProductId(productId);
-    
+
     if (inventory.availableStock < quantity) {
       throw new InsufficientStockError();
     }
-    
+
     inventory.reserve(quantity);
     await this.inventoryRepo.save(inventory);
-    
+
   } finally {
     await lock.release();
   }
@@ -573,17 +588,17 @@ async reserveStock(productId: string, quantity: number) {
 
 ```yaml
 # Debezium connector configuration
-name: "product-connector"
+name: 'product-connector'
 config:
-  connector.class: "io.debezium.connector.postgresql.PostgresConnector"
-  database.hostname: "postgres"
-  database.port: "5432"
-  database.user: "debezium"
-  database.password: "secret"
-  database.dbname: "product_db"
-  table.include.list: "public.products,public.outbox_events"
-  transforms: "outbox"
-  transforms.outbox.type: "io.debezium.transforms.outbox.EventRouter"
+  connector.class: 'io.debezium.connector.postgresql.PostgresConnector'
+  database.hostname: 'postgres'
+  database.port: '5432'
+  database.user: 'debezium'
+  database.password: 'secret'
+  database.dbname: 'product_db'
+  table.include.list: 'public.products,public.outbox_events'
+  transforms: 'outbox'
+  transforms.outbox.type: 'io.debezium.transforms.outbox.EventRouter'
 ```
 
 ### 6. Query Optimization Techniques
@@ -674,7 +689,7 @@ spec:
         - name: order-service
           image: shopflow/order-service:latest
           ports:
-            - containerPort: 50051  # gRPC
+            - containerPort: 50051 # gRPC
           env:
             - name: DATABASE_URL
               valueFrom:
@@ -682,7 +697,7 @@ spec:
                   name: order-service-secrets
                   key: database-url
             - name: KAFKA_BROKERS
-              value: "kafka-0.kafka:9092,kafka-1.kafka:9092"
+              value: 'kafka-0.kafka:9092,kafka-1.kafka:9092'
             - name: REDIS_URL
               valueFrom:
                 secretKeyRef:
@@ -690,11 +705,11 @@ spec:
                   key: redis-url
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "200m"
+              memory: '256Mi'
+              cpu: '200m'
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: '512Mi'
+              cpu: '500m'
 ```
 
 ### NGINX Ingress Configuration
@@ -707,9 +722,9 @@ metadata:
   namespace: shopflow
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+    nginx.ingress.kubernetes.io/proxy-body-size: '50m'
+    cert-manager.io/cluster-issuer: 'letsencrypt-prod'
 spec:
   tls:
     - hosts:
@@ -777,7 +792,6 @@ spec:
   - JWT authentication
   - gRPC endpoints
   - DDD implementation
-  
 - [ ] **Product Service**
   - Product CRUD
   - Category management
@@ -878,47 +892,55 @@ spec:
 ### By completing this project, you will learn:
 
 #### gRPC & Communication
+
 - [ ] Define protobuf schemas
 - [ ] Implement gRPC servers and clients in NestJS
 - [ ] Setup gRPC-Gateway for REST compatibility
 - [ ] Handle gRPC streaming
 
 #### Microservices & Kafka
+
 - [ ] Design service boundaries
 - [ ] Implement async communication with Kafka
 - [ ] Handle message ordering and partitioning
 - [ ] Implement dead letter queues
 
 #### Distributed Patterns
+
 - [ ] **Saga Pattern**: Orchestrate distributed transactions
 - [ ] **Distributed Lock**: Implement Redlock algorithm
 - [ ] **Outbox Pattern**: Ensure reliable event publishing
 - [ ] **CDC**: Capture and propagate data changes
 
 #### Redis
+
 - [ ] Configure Redis Sentinel for HA
 - [ ] Setup Redis Cluster for scaling
 - [ ] Implement caching strategies
 - [ ] Use Redis for session storage
 
 #### PostgreSQL
+
 - [ ] Design normalized schemas
 - [ ] Implement complex queries
 - [ ] Optimize with indexes
 - [ ] Use transactions effectively
 
 #### Clean Architecture & DDD
+
 - [ ] Structure code in layers
 - [ ] Identify bounded contexts
 - [ ] Implement aggregates and entities
 - [ ] Apply domain events
 
 #### CQRS
+
 - [ ] Separate command and query models
 - [ ] Implement read-optimized views
 - [ ] Sync data between models
 
 #### Infrastructure
+
 - [ ] Deploy to Kubernetes
 - [ ] Configure NGINX Ingress
 - [ ] Use Helm for packaging
@@ -929,6 +951,7 @@ spec:
 ## 📚 Resources
 
 ### Documentation
+
 - [NestJS Microservices](https://docs.nestjs.com/microservices/basics)
 - [gRPC](https://grpc.io/docs/)
 - [Apache Kafka](https://kafka.apache.org/documentation/)
@@ -938,6 +961,7 @@ spec:
 - [Turborepo](https://turbo.build/repo/docs)
 
 ### Books
+
 - "Building Microservices" by Sam Newman
 - "Domain-Driven Design" by Eric Evans
 - "Designing Data-Intensive Applications" by Martin Kleppmann
@@ -974,4 +998,3 @@ pnpm test
 **Happy Learning! 🎉**
 
 > "The best way to learn is by building. Start with Phase 1 and progress through each phase, taking time to understand each pattern and technology deeply."
-
