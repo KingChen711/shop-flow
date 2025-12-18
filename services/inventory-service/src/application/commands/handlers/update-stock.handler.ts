@@ -38,13 +38,8 @@ export class UpdateStockHandler implements ICommandHandler<UpdateStockCommand> {
       } else {
         const previousStock = inventory.totalStock;
 
-        if (quantity >= 0) {
-          // Setting absolute value
-          inventory.setStock(quantity);
-        } else {
-          // Reducing stock
-          inventory.updateStock(quantity);
-        }
+        // Always ADD the quantity (positive to increase, negative to decrease)
+        inventory.updateStock(quantity);
 
         // Publish stock updated event
         this.eventBus.publish(

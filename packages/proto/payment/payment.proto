@@ -35,13 +35,18 @@ enum PaymentMethod {
 // Request Messages
 // ============================================
 
+message PaymentDetail {
+  string key = 1;
+  string value = 2;
+}
+
 message ProcessPaymentRequest {
   string order_id = 1;
   string user_id = 2;
   double amount = 3;
   string currency = 4;
   PaymentMethod payment_method = 5;
-  map<string, string> payment_details = 6;
+  repeated PaymentDetail payment_details = 6;
   string idempotency_key = 7;
 }
 
