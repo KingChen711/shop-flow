@@ -26,6 +26,7 @@ services:
   postgres-product:
     image: postgres:16-alpine
     container_name: shopflow-postgres-product
+    command: postgres -c wal_level=logical -c max_replication_slots=4 -c max_wal_senders=4
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-shopflow}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shopflow123}

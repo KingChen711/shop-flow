@@ -1,0 +1,154 @@
+syntax = "proto3";
+
+package search;
+
+// Search Service Definition
+service SearchService {
+  // Search products with full-text search
+  rpc SearchProducts(SearchProductsRequest) returns (SearchProductsResponse);
+  
+  // Get search suggestions (autocomplete)
+  rpc GetSuggestions(GetSuggestionsRequest) returns (GetSuggestionsResponse);
+  
+  // Index a product (usually called via CDC, but available for manual indexing)
+  rpc IndexProduct(IndexProductRequest) returns (IndexProductResponse);
+  
+  // Delete a product from index
+  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
+  
+  // Reindex all products (admin operation)
+  rpc ReindexAll(ReindexAllRequest) returns (ReindexAllResponse);
+  
+  // Get index statistics
+  rpc GetIndexStats(GetIndexStatsRequest) returns (GetIndexStatsResponse);
+}
+
+// ============================================
+// Search Request/Response Messages
+// ============================================
+
+message SearchProductsRequest {
+  string query = 1;                          // Search query string
+  repeated string category_ids = 2;          // Filter by category IDs
+  optional double min_price = 3;             // Minimum price filter
+  optional double max_price = 4;             // Maximum price filter
+  repeated FacetFilter facets = 5;           // Additional facet filters
+  string sort_by = 6;                        // Sort field: relevance, price_asc, price_desc, name, newest
+  int32 page = 7;                            // Page number (1-based)
+  int32 limit = 8;                           // Results per page
+}
+
+message FacetFilter {
+  string field = 1;                          // Field name to filter
+  repeated string values = 2;                // Values to match
+}
+
+message SearchProductsResponse {
+  repeated ProductHit products = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+  repeated FacetResult facets = 6;           // Aggregation results
+  int64 took_ms = 7;                         // Search time in milliseconds
+}
+
+message ProductHit {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  string category_id = 5;
+  string category_name = 6;
+  repeated string image_urls = 7;
+  repeated ProductAttribute attributes = 8;
+  double score = 9;                          // Relevance score
+  repeated string highlights = 10;           // Highlighted text snippets
+  string created_at = 11;
+  string updated_at = 12;
+}
+
+message ProductAttribute {
+  string key = 1;
+  string value = 2;
+}
+
+message FacetResult {
+  string field = 1;
+  repeated FacetBucket buckets = 2;
+}
+
+message FacetBucket {
+  string key = 1;
+  int64 count = 2;
+}
+
+// ============================================
+// Suggestions (Autocomplete)
+// ============================================
+
+message GetSuggestionsRequest {
+  string prefix = 1;                         // Partial query for autocomplete
+  int32 limit = 2;                           // Max suggestions to return
+}
+
+message GetSuggestionsResponse {
+  repeated Suggestion suggestions = 1;
+}
+
+message Suggestion {
+  string text = 1;                           // Suggested text
+  string type = 2;                           // Type: product, category, keyword
+  optional string product_id = 3;            // Product ID if type is product
+}
+
+// ============================================
+// Index Management
+// ============================================
+
+message IndexProductRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  string category_id = 5;
+  string category_name = 6;
+  repeated string image_urls = 7;
+  repeated ProductAttribute attributes = 8;
+  string created_at = 9;
+  string updated_at = 10;
+}
+
+message IndexProductResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message DeleteProductRequest {
+  string product_id = 1;
+}
+
+message DeleteProductResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ReindexAllRequest {
+  bool force = 1;                            // Force reindex even if index exists
+}
+
+message ReindexAllResponse {
+  bool success = 1;
+  string message = 2;
+  int32 indexed_count = 3;
+}
+
+message GetIndexStatsRequest {}
+
+message GetIndexStatsResponse {
+  string index_name = 1;
+  int64 document_count = 2;
+  int64 size_bytes = 3;
+  string health = 4;                         // green, yellow, red
+  string last_updated = 5;
+}

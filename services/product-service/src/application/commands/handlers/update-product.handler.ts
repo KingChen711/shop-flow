@@ -6,6 +6,7 @@ import { NotFoundError } from '@shopflow/shared-utils';
 import { UpdateProductCommand } from '../update-product.command';
 import { Product } from '@domain/entities/product.entity';
 import { IProductRepository } from '@domain/repositories/product.repository.interface';
+import { ICategoryRepository } from '@domain/repositories/category.repository.interface';
 import { ProductUpdatedEvent } from '@domain/events/product.events';
 import { OutboxService } from '@infrastructure/outbox/outbox.service';
 import { ProductEntity } from '@infrastructure/persistence/entities/product.entity';
@@ -15,6 +16,8 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
   constructor(
     @Inject('ProductRepository')
     private readonly productRepository: IProductRepository,
+    @Inject('CategoryRepository')
+    private readonly categoryRepository: ICategoryRepository,
     private readonly eventBus: EventBus,
     private readonly outboxService: OutboxService,
     @InjectDataSource()
@@ -79,7 +82,22 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
 
       // Only add to outbox if there were changes
       if (Object.keys(changes).length > 0) {
-        const event = new ProductUpdatedEvent(productId, { productId, changes });
+        // Get category name for search indexing
+        const category = await this.categoryRepository.findById(saved.categoryId);
+
+        const event = new ProductUpdatedEvent(productId, {
+          productId,
+          name: saved.name,
+          description: saved.description,
+          price: Number(saved.price),
+          categoryId: saved.categoryId,
+          categoryName: category?.name || '',
+          imageUrls: saved.imageUrls,
+          attributes: saved.attributes,
+          isActive: saved.isActive,
+          updatedAt: saved.updatedAt.toISOString(),
+          changes,
+        });
         await this.outboxService.addEvent(event, entityManager);
       }
 
@@ -99,7 +117,21 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
 
     // Publish event internally if there were changes
     if (Object.keys(changes).length > 0) {
-      const event = new ProductUpdatedEvent(productId, { productId, changes });
+      const category = await this.categoryRepository.findById(updatedProduct.categoryId);
+
+      const event = new ProductUpdatedEvent(productId, {
+        productId,
+        name: updatedProduct.name,
+        description: updatedProduct.description,
+        price: updatedProduct.price,
+        categoryId: updatedProduct.categoryId,
+        categoryName: category?.name || '',
+        imageUrls: updatedProduct.imageUrls,
+        attributes: updatedProduct.attributes,
+        isActive: updatedProduct.isActive,
+        updatedAt: updatedProduct.updatedAt.toISOString(),
+        changes,
+      });
       this.eventBus.publish(event);
     }
 

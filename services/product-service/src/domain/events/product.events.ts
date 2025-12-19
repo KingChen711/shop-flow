@@ -12,8 +12,15 @@ export class ProductCreatedEvent implements DomainEvent {
     public readonly payload: {
       productId: string;
       name: string;
+      description: string;
       price: number;
       categoryId: string;
+      categoryName?: string;
+      imageUrls: string[];
+      attributes: Record<string, string>;
+      isActive: boolean;
+      createdAt: string;
+      updatedAt: string;
     }
   ) {
     this.eventId = generateId();
@@ -31,6 +38,15 @@ export class ProductUpdatedEvent implements DomainEvent {
     public readonly aggregateId: string,
     public readonly payload: {
       productId: string;
+      name: string;
+      description: string;
+      price: number;
+      categoryId: string;
+      categoryName?: string;
+      imageUrls: string[];
+      attributes: Record<string, string>;
+      isActive: boolean;
+      updatedAt: string;
       changes: Record<string, unknown>;
     }
   ) {

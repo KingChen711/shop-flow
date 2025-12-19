@@ -59,12 +59,22 @@ export class CreateProductHandler implements ICommandHandler<CreateProductComman
 
       const saved = await entityManager.save(ProductEntity, productEntity);
 
-      // Create domain event
+      // Fetch category name for search indexing
+      const category = await this.categoryRepository.findById(product.categoryId);
+
+      // Create domain event with full product data for search indexing
       const event = new ProductCreatedEvent(product.id, {
         productId: product.id,
         name: product.name,
+        description: product.description,
         price: product.price,
         categoryId: product.categoryId,
+        categoryName: category?.name || '',
+        imageUrls: product.imageUrls,
+        attributes: product.attributes,
+        isActive: product.isActive,
+        createdAt: saved.createdAt.toISOString(),
+        updatedAt: saved.updatedAt.toISOString(),
       });
 
       // Add event to outbox (same transaction)
@@ -84,12 +94,22 @@ export class CreateProductHandler implements ICommandHandler<CreateProductComman
       });
     });
 
+    // Fetch category for internal event
+    const category = await this.categoryRepository.findById(savedProduct.categoryId);
+
     // Publish domain event internally
     const event = new ProductCreatedEvent(savedProduct.id, {
       productId: savedProduct.id,
       name: savedProduct.name,
+      description: savedProduct.description,
       price: savedProduct.price,
       categoryId: savedProduct.categoryId,
+      categoryName: category?.name || '',
+      imageUrls: savedProduct.imageUrls,
+      attributes: savedProduct.attributes,
+      isActive: savedProduct.isActive,
+      createdAt: savedProduct.createdAt.toISOString(),
+      updatedAt: savedProduct.updatedAt.toISOString(),
     });
     this.eventBus.publish(event);
 
