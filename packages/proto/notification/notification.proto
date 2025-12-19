@@ -1,0 +1,204 @@
+syntax = "proto3";
+
+package notification;
+
+// Notification Service Definition
+service NotificationService {
+  // Template Management
+  rpc CreateTemplate(CreateTemplateRequest) returns (TemplateResponse);
+  rpc GetTemplate(GetTemplateRequest) returns (TemplateResponse);
+  rpc UpdateTemplate(UpdateTemplateRequest) returns (TemplateResponse);
+  rpc DeleteTemplate(DeleteTemplateRequest) returns (DeleteTemplateResponse);
+  rpc ListTemplates(ListTemplatesRequest) returns (ListTemplatesResponse);
+  
+  // Send Notifications
+  rpc SendEmail(SendEmailRequest) returns (NotificationResponse);
+  rpc SendSms(SendSmsRequest) returns (NotificationResponse);
+  rpc SendPush(SendPushRequest) returns (NotificationResponse);
+  
+  // Notification History
+  rpc GetNotification(GetNotificationRequest) returns (NotificationResponse);
+  rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse);
+}
+
+// ============================================
+// Enums
+// ============================================
+
+enum NotificationChannel {
+  NOTIFICATION_CHANNEL_UNSPECIFIED = 0;
+  NOTIFICATION_CHANNEL_EMAIL = 1;
+  NOTIFICATION_CHANNEL_SMS = 2;
+  NOTIFICATION_CHANNEL_PUSH = 3;
+}
+
+enum NotificationStatus {
+  NOTIFICATION_STATUS_UNSPECIFIED = 0;
+  NOTIFICATION_STATUS_PENDING = 1;
+  NOTIFICATION_STATUS_SENT = 2;
+  NOTIFICATION_STATUS_DELIVERED = 3;
+  NOTIFICATION_STATUS_FAILED = 4;
+}
+
+enum TemplateType {
+  TEMPLATE_TYPE_UNSPECIFIED = 0;
+  TEMPLATE_TYPE_ORDER_CREATED = 1;
+  TEMPLATE_TYPE_ORDER_CONFIRMED = 2;
+  TEMPLATE_TYPE_ORDER_SHIPPED = 3;
+  TEMPLATE_TYPE_ORDER_DELIVERED = 4;
+  TEMPLATE_TYPE_ORDER_CANCELLED = 5;
+  TEMPLATE_TYPE_PAYMENT_SUCCESS = 6;
+  TEMPLATE_TYPE_PAYMENT_FAILED = 7;
+  TEMPLATE_TYPE_WELCOME = 8;
+  TEMPLATE_TYPE_PASSWORD_RESET = 9;
+  TEMPLATE_TYPE_CUSTOM = 10;
+}
+
+// ============================================
+// Template Messages
+// ============================================
+
+message CreateTemplateRequest {
+  string name = 1;
+  TemplateType type = 2;
+  NotificationChannel channel = 3;
+  string subject = 4;         // For email
+  string body = 5;            // Template body with placeholders like {{name}}, {{orderId}}
+  bool is_active = 6;
+}
+
+message GetTemplateRequest {
+  string template_id = 1;
+}
+
+message UpdateTemplateRequest {
+  string template_id = 1;
+  optional string name = 2;
+  optional string subject = 3;
+  optional string body = 4;
+  optional bool is_active = 5;
+}
+
+message DeleteTemplateRequest {
+  string template_id = 1;
+}
+
+message DeleteTemplateResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ListTemplatesRequest {
+  optional NotificationChannel channel = 1;
+  optional TemplateType type = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+message TemplateResponse {
+  string id = 1;
+  string name = 2;
+  TemplateType type = 3;
+  NotificationChannel channel = 4;
+  string subject = 5;
+  string body = 6;
+  bool is_active = 7;
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+message ListTemplatesResponse {
+  repeated TemplateResponse templates = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+}
+
+// ============================================
+// Send Notification Messages
+// ============================================
+
+message TemplateVariable {
+  string key = 1;
+  string value = 2;
+}
+
+message SendEmailRequest {
+  string recipient_email = 1;
+  string recipient_name = 2;
+  optional string template_id = 3;       // Use template
+  optional string custom_subject = 4;    // Or custom content
+  optional string custom_body = 5;
+  repeated TemplateVariable variables = 6;
+  optional string user_id = 7;
+  optional string reference_id = 8;      // e.g., order_id
+  optional string reference_type = 9;    // e.g., "order"
+}
+
+message SendSmsRequest {
+  string phone_number = 1;
+  optional string template_id = 2;
+  optional string custom_message = 3;
+  repeated TemplateVariable variables = 4;
+  optional string user_id = 5;
+  optional string reference_id = 6;
+  optional string reference_type = 7;
+}
+
+message PushDataEntry {
+  string key = 1;
+  string value = 2;
+}
+
+message SendPushRequest {
+  string user_id = 1;
+  string device_token = 2;
+  string title = 3;
+  string body = 4;
+  optional string image_url = 5;
+  repeated PushDataEntry data = 6;  // Use repeated instead of map for gRPC reflection compatibility
+  optional string reference_id = 7;
+  optional string reference_type = 8;
+}
+
+// ============================================
+// Notification History Messages
+// ============================================
+
+message GetNotificationRequest {
+  string notification_id = 1;
+}
+
+message ListNotificationsRequest {
+  optional string user_id = 1;
+  optional NotificationChannel channel = 2;
+  optional NotificationStatus status = 3;
+  optional string reference_id = 4;
+  int32 page = 5;
+  int32 limit = 6;
+}
+
+message NotificationResponse {
+  string id = 1;
+  string user_id = 2;
+  NotificationChannel channel = 3;
+  NotificationStatus status = 4;
+  string recipient = 5;            // email, phone, or device token
+  string subject = 6;
+  string body = 7;
+  optional string template_id = 8;
+  optional string reference_id = 9;
+  optional string reference_type = 10;
+  optional string error_message = 11;
+  string created_at = 12;
+  optional string sent_at = 13;
+}
+
+message ListNotificationsResponse {
+  repeated NotificationResponse notifications = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+}

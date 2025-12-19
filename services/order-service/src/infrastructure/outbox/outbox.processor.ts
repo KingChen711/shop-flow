@@ -59,16 +59,18 @@ export class OutboxProcessor implements OnModuleInit {
   }
 
   private getTopicForEvent(eventType: string): string {
+    // Use the event type as the topic name for domain events
+    // This allows consumers to subscribe to specific event types
     const topicMap: Record<string, string> = {
-      'order.created': 'order-events',
-      'order.confirmed': 'order-events',
-      'order.cancelled': 'order-events',
-      'order.failed': 'order-events',
+      'order.created': 'order.created',
+      'order.confirmed': 'order.confirmed',
+      'order.cancelled': 'order.cancelled',
+      'order.failed': 'order.failed',
       'saga.started': 'saga-events',
       'saga.completed': 'saga-events',
       'saga.failed': 'saga-events',
     };
 
-    return topicMap[eventType] || 'order-events';
+    return topicMap[eventType] || eventType;
   }
 }

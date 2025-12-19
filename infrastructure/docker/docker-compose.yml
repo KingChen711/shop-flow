@@ -99,6 +99,25 @@ services:
     networks:
       - shopflow-network
 
+  postgres-notification:
+    image: postgres:16-alpine
+    container_name: shopflow-postgres-notification
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-shopflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shopflow123}
+      POSTGRES_DB: notification_db
+    ports:
+      - '5437:5432'
+    volumes:
+      - postgres-notification-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U shopflow -d notification_db']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shopflow-network
+
   # ============================================
   # REDIS (Single instance for dev, Cluster for prod)
   # ============================================
@@ -274,6 +293,8 @@ volumes:
     name: shopflow-postgres-inventory-data
   postgres-payment-data:
     name: shopflow-postgres-payment-data
+  postgres-notification-data:
+    name: shopflow-postgres-notification-data
   redis-data:
     name: shopflow-redis-data
   zookeeper-data:
