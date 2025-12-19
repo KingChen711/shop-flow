@@ -34,8 +34,8 @@ export class AuthService {
       'JWT_SECRET',
       'your-super-secret-key-change-in-production'
     );
-    this.jwtExpiresIn = this.configService.get('JWT_EXPIRES_IN', 3600); // 1 hour
-    this.refreshExpiresIn = this.configService.get('REFRESH_EXPIRES_IN', 604800); // 7 days
+    this.jwtExpiresIn = this.configService.get('JWT_EXPIRES_IN', 3600000); // 1 hour
+    this.refreshExpiresIn = this.configService.get('REFRESH_EXPIRES_IN', 604800000); // 7 days
   }
 
   async login(email: string, password: string): Promise<{ tokens: AuthTokens; user: User }> {

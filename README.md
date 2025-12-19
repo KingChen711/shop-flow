@@ -1,3 +1,5 @@
+CURRENT PROGRESS: Complete phase 4
+
 # Turborepo starter
 
 This Turborepo starter is maintained by the Turborepo core team.
