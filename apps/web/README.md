@@ -1,36 +1,147 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/create-next-app).
+# ShopFlow Customer Web App
+
+A modern e-commerce storefront built with Next.js 16, React 19, and Tailwind CSS.
+
+## Features
+
+- **Product Browsing**: Browse products with filters, search, and sorting
+- **Product Details**: View detailed product information, specifications, and reviews
+- **Shopping Cart**: Add items, update quantities, persistent cart storage
+- **Checkout Flow**: Multi-step checkout with shipping and payment
+- **Order History**: View past orders and track shipments
+- **Responsive Design**: Mobile-first, works on all devices
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS 4
+- **State Management**: Zustand
+- **Icons**: Lucide React
+- **Testing**: Vitest + Testing Library
+- **Monorepo**: Turborepo
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- pnpm
+
+### Installation
+
+From the monorepo root:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Install dependencies
+pnpm install
+
+# Run the web app
+pnpm dev --filter=web
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Or navigate to the web directory:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cd apps/web
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load Inter, a custom Google Font.
+The app will be available at [http://localhost:3000](http://localhost:3000).
 
-## Learn More
+### Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+Create a `.env.local` file:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8080
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+apps/web/
+├── app/                    # Next.js App Router pages
+│   ├── account/           # Account & orders pages
+│   ├── cart/              # Shopping cart
+│   ├── checkout/          # Checkout flow
+│   ├── products/          # Product listing & details
+│   ├── globals.css        # Global styles
+│   ├── layout.tsx         # Root layout
+│   └── page.tsx           # Homepage
+├── components/            # React components
+│   ├── layout/            # Header, Footer
+│   ├── products/          # Product components
+│   └── ui/                # UI primitives
+├── lib/                   # Utilities and API
+│   ├── api/               # API client and services
+│   └── utils.ts           # Utility functions
+├── store/                 # Zustand stores
+│   └── cart-store.ts      # Cart state management
+└── public/                # Static assets
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Available Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# Development
+pnpm dev              # Start dev server on port 3000
+
+# Building
+pnpm build            # Build for production
+pnpm start            # Start production server
+
+# Testing
+pnpm test             # Run unit tests
+pnpm test:ui          # Run tests with UI
+pnpm test:coverage    # Run tests with coverage
+
+# Code Quality
+pnpm lint             # Run ESLint
+pnpm check-types      # Run TypeScript check
+```
+
+## Pages
+
+| Route | Description |
+|-------|-------------|
+| `/` | Homepage with featured products |
+| `/products` | Product listing with filters |
+| `/products/[id]` | Product detail page |
+| `/cart` | Shopping cart |
+| `/checkout` | Checkout flow |
+| `/checkout/success` | Order confirmation |
+| `/account` | User account |
+| `/account/orders` | Order history |
+
+## Cart Storage
+
+The cart uses Zustand with localStorage persistence. Cart data survives page refreshes and browser restarts.
+
+## API Integration
+
+The app includes a complete API client ready for backend integration:
+
+- `productsApi` - Product operations
+- `ordersApi` - Order management
+- `cartApi` - Server-side cart (optional)
+- `authApi` - Authentication
+
+Currently using mock data; connect to ShopFlow API Gateway for full functionality.
+
+## Testing
+
+```bash
+# Run all tests
+pnpm test
+
+# Run with coverage
+pnpm test:coverage
+
+# Run specific test file
+pnpm test cart-store.test.ts
+```
+
+## License
+
+MIT
