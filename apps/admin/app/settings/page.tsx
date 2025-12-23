@@ -95,7 +95,9 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Low Stock Alerts</p>
-                  <p className="text-sm text-muted-foreground">Get notified when products are low on stock</p>
+                  <p className="text-sm text-muted-foreground">
+                    Get notified when products are low on stock
+                  </p>
                 </div>
                 <input type="checkbox" className="h-5 w-5 rounded" defaultChecked />
               </div>
@@ -112,7 +114,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">API Endpoint</label>
-                <Input defaultValue="http://localhost:8080" />
+                <Input defaultValue="http://localhost:6000" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">API Key</label>

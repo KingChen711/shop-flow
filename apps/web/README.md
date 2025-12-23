@@ -54,7 +54,7 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 Create a `.env.local` file:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:8080
+NEXT_PUBLIC_API_URL=http://localhost:6000
 ```
 
 ## Project Structure
@@ -103,16 +103,16 @@ pnpm check-types      # Run TypeScript check
 
 ## Pages
 
-| Route | Description |
-|-------|-------------|
-| `/` | Homepage with featured products |
-| `/products` | Product listing with filters |
-| `/products/[id]` | Product detail page |
-| `/cart` | Shopping cart |
-| `/checkout` | Checkout flow |
-| `/checkout/success` | Order confirmation |
-| `/account` | User account |
-| `/account/orders` | Order history |
+| Route               | Description                     |
+| ------------------- | ------------------------------- |
+| `/`                 | Homepage with featured products |
+| `/products`         | Product listing with filters    |
+| `/products/[id]`    | Product detail page             |
+| `/cart`             | Shopping cart                   |
+| `/checkout`         | Checkout flow                   |
+| `/checkout/success` | Order confirmation              |
+| `/account`          | User account                    |
+| `/account/orders`   | Order history                   |
 
 ## Cart Storage
 

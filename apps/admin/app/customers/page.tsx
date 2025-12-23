@@ -3,7 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Search, Mail, MoreHorizontal } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
@@ -103,13 +110,17 @@ export default function CustomersPage() {
                       </div>
                     </TableCell>
                     <TableCell>{customer.orders}</TableCell>
-                    <TableCell className="font-medium">{formatCurrency(customer.totalSpent)}</TableCell>
+                    <TableCell className="font-medium">
+                      {formatCurrency(customer.totalSpent)}
+                    </TableCell>
                     <TableCell>
                       <Badge variant={customer.status === 'active' ? 'success' : 'secondary'}>
                         {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{formatDate(customer.joinDate)}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {formatDate(customer.joinDate)}
+                    </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon">
                         <MoreHorizontal className="h-4 w-4" />

@@ -39,15 +39,16 @@ export interface AnalyticsFilters {
 }
 
 export const analyticsApi = {
-  getDashboardStats: () =>
-    apiClient.get<DashboardStats>('/api/analytics/dashboard'),
+  getDashboardStats: () => apiClient.get<DashboardStats>('/api/analytics/dashboard'),
 
   getRevenueData: (filters?: AnalyticsFilters) =>
-    apiClient.get<RevenueData[]>('/api/analytics/revenue', filters as Record<string, string | number | undefined>),
+    apiClient.get<RevenueData[]>(
+      '/api/analytics/revenue',
+      filters as Record<string, string | number | undefined>
+    ),
 
   getTopProducts: (limit?: number) =>
     apiClient.get<TopProduct[]>('/api/analytics/top-products', { limit }),
 
-  getCustomerStats: () =>
-    apiClient.get<CustomerStats>('/api/analytics/customers'),
+  getCustomerStats: () => apiClient.get<CustomerStats>('/api/analytics/customers'),
 };

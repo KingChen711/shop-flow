@@ -742,7 +742,7 @@ spec:
               service:
                 name: grpc-gateway
                 port:
-                  number: 8080
+                  number: 6000
     - host: www.shopflow.com
       http:
         paths:

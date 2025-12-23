@@ -102,9 +102,7 @@ export default function NotificationsPage() {
                     <div className="flex-1 space-y-1">
                       <div className="flex items-center gap-2">
                         <p className="font-medium">{notification.title}</p>
-                        {!notification.read && (
-                          <span className="h-2 w-2 rounded-full bg-primary" />
-                        )}
+                        {!notification.read && <span className="h-2 w-2 rounded-full bg-primary" />}
                       </div>
                       <p className="text-sm text-muted-foreground">{notification.description}</p>
                       <p className="text-xs text-muted-foreground">{notification.time}</p>

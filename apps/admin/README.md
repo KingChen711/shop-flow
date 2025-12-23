@@ -57,12 +57,12 @@ Copy `.env.example` to `.env.local` and configure:
 cp .env.example .env.local
 ```
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NEXT_PUBLIC_API_URL` | API Gateway URL | `http://localhost:8080` |
-| `NEXT_PUBLIC_AUTH_URL` | Authentication URL | `http://localhost:8080/auth` |
-| `NEXT_PUBLIC_ENABLE_ANALYTICS` | Enable analytics features | `true` |
-| `NEXT_PUBLIC_ENABLE_NOTIFICATIONS` | Enable notifications | `true` |
+| Variable                           | Description               | Default                      |
+| ---------------------------------- | ------------------------- | ---------------------------- |
+| `NEXT_PUBLIC_API_URL`              | API Gateway URL           | `http://localhost:6000`      |
+| `NEXT_PUBLIC_AUTH_URL`             | Authentication URL        | `http://localhost:6000/auth` |
+| `NEXT_PUBLIC_ENABLE_ANALYTICS`     | Enable analytics features | `true`                       |
+| `NEXT_PUBLIC_ENABLE_NOTIFICATIONS` | Enable notifications      | `true`                       |
 
 ## Project Structure
 

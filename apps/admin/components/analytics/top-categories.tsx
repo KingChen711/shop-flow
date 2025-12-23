@@ -54,10 +54,7 @@ export function TopCategories() {
           <div className="space-y-4">
             {data.map((item, index) => (
               <div key={item.name} className="flex items-center gap-4">
-                <div
-                  className="h-3 w-3 rounded-full"
-                  style={{ backgroundColor: COLORS[index] }}
-                />
+                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: COLORS[index] }} />
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <span className="font-medium">{item.name}</span>
