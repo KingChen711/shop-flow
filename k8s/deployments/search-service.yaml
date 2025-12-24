@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-service
+  namespace: shopflow
+  labels:
+    app: search-service
+    app.kubernetes.io/name: search-service
+    app.kubernetes.io/part-of: shopflow-platform
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: search-service
+  template:
+    metadata:
+      labels:
+        app: search-service
+    spec:
+      containers:
+        - name: search-service
+          image: shopflow/search-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 50057
+              name: grpc
+          envFrom:
+            - configMapRef:
+                name: common-config
+            - configMapRef:
+                name: search-service-config
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - 'node -e "require(''net'').connect(50057, ''localhost'').on(''error'', () => process.exit(1)).end()"'
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - 'node -e "require(''net'').connect(50057, ''localhost'').on(''error'', () => process.exit(1)).end()"'
+            initialDelaySeconds: 30
+            periodSeconds: 30
+      restartPolicy: Always

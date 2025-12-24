@@ -1,0 +1,161 @@
+# User Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: shopflow
+  labels:
+    app: user-service
+spec:
+  type: ClusterIP
+  selector:
+    app: user-service
+  ports:
+    - port: 50051
+      targetPort: 50051
+      protocol: TCP
+      name: grpc
+---
+# Product Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  namespace: shopflow
+  labels:
+    app: product-service
+spec:
+  type: ClusterIP
+  selector:
+    app: product-service
+  ports:
+    - port: 50052
+      targetPort: 50052
+      protocol: TCP
+      name: grpc
+---
+# Order Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: shopflow
+  labels:
+    app: order-service
+spec:
+  type: ClusterIP
+  selector:
+    app: order-service
+  ports:
+    - port: 50053
+      targetPort: 50053
+      protocol: TCP
+      name: grpc
+---
+# Inventory Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+  namespace: shopflow
+  labels:
+    app: inventory-service
+spec:
+  type: ClusterIP
+  selector:
+    app: inventory-service
+  ports:
+    - port: 50054
+      targetPort: 50054
+      protocol: TCP
+      name: grpc
+---
+# Payment Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: shopflow
+  labels:
+    app: payment-service
+spec:
+  type: ClusterIP
+  selector:
+    app: payment-service
+  ports:
+    - port: 50055
+      targetPort: 50055
+      protocol: TCP
+      name: grpc
+---
+# Notification Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: shopflow
+  labels:
+    app: notification-service
+spec:
+  type: ClusterIP
+  selector:
+    app: notification-service
+  ports:
+    - port: 50056
+      targetPort: 50056
+      protocol: TCP
+      name: grpc
+---
+# Search Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: search-service
+  namespace: shopflow
+  labels:
+    app: search-service
+spec:
+  type: ClusterIP
+  selector:
+    app: search-service
+  ports:
+    - port: 50057
+      targetPort: 50057
+      protocol: TCP
+      name: grpc
+---
+# Cart Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: cart-service
+  namespace: shopflow
+  labels:
+    app: cart-service
+spec:
+  type: ClusterIP
+  selector:
+    app: cart-service
+  ports:
+    - port: 50058
+      targetPort: 50058
+      protocol: TCP
+      name: grpc
+---
+# API Gateway Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: shopflow
+  labels:
+    app: api-gateway
+spec:
+  type: ClusterIP
+  selector:
+    app: api-gateway
+  ports:
+    - port: 6000
+      targetPort: 6000
+      protocol: TCP
+      name: http

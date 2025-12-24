@@ -1,0 +1,32 @@
+# ============================================
+# Monitoring Stack Kustomization
+# ============================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: monitoring
+
+resources:
+  # Namespace
+  - namespace.yaml
+
+  # Prometheus
+  - prometheus/configmap.yaml
+  - prometheus/deployment.yaml
+
+  # Grafana
+  - grafana/configmap.yaml
+  - grafana/deployment.yaml
+
+  # Jaeger
+  - jaeger/deployment.yaml
+
+  # ELK Stack
+  - elk/elasticsearch.yaml
+  - elk/logstash.yaml
+  - elk/kibana.yaml
+  - elk/filebeat.yaml
+
+commonLabels:
+  stack: monitoring
+  app.kubernetes.io/part-of: shopflow-monitoring

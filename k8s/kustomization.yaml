@@ -1,0 +1,42 @@
+# Kustomization for ShopFlow Kubernetes Resources
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: shopflow
+
+resources:
+  # Namespace and base configs
+  - namespace.yaml
+
+  # ConfigMaps
+  - configmaps/common-config.yaml
+  - configmaps/services-config.yaml
+
+  # Secrets
+  - secrets/database-secrets.yaml
+
+  # Infrastructure
+  - infrastructure/redis.yaml
+  - infrastructure/kafka.yaml
+  - infrastructure/elasticsearch.yaml
+
+  # Deployments
+  - deployments/user-service.yaml
+  - deployments/product-service.yaml
+  - deployments/order-service.yaml
+  - deployments/inventory-service.yaml
+  - deployments/payment-service.yaml
+  - deployments/notification-service.yaml
+  - deployments/search-service.yaml
+  - deployments/cart-service.yaml
+  - deployments/api-gateway.yaml
+
+  # Services
+  - services/services.yaml
+
+  # Ingress
+  - ingress/ingress.yaml
+
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize
+  app.kubernetes.io/part-of: shopflow-platform

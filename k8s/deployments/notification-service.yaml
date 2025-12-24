@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: shopflow
+  labels:
+    app: notification-service
+    app.kubernetes.io/name: notification-service
+    app.kubernetes.io/part-of: shopflow-platform
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+        - name: notification-service
+          image: shopflow/notification-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 50056
+              name: grpc
+          envFrom:
+            - configMapRef:
+                name: common-config
+            - configMapRef:
+                name: notification-service-config
+          env:
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: database-secrets
+                  key: DATABASE_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: database-secrets
+                  key: DATABASE_PASSWORD
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - 'node -e "require(''net'').connect(50056, ''localhost'').on(''error'', () => process.exit(1)).end()"'
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - 'node -e "require(''net'').connect(50056, ''localhost'').on(''error'', () => process.exit(1)).end()"'
+            initialDelaySeconds: 30
+            periodSeconds: 30
+      restartPolicy: Always

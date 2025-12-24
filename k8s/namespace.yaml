@@ -1,0 +1,41 @@
+# Kubernetes Namespace for ShopFlow
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shopflow
+  labels:
+    app.kubernetes.io/name: shopflow
+    app.kubernetes.io/part-of: shopflow-platform
+---
+# Resource Quota for the namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: shopflow-quota
+  namespace: shopflow
+spec:
+  hard:
+    requests.cpu: '8'
+    requests.memory: 16Gi
+    limits.cpu: '16'
+    limits.memory: 32Gi
+    pods: '50'
+    services: '20'
+    secrets: '30'
+    configmaps: '30'
+---
+# LimitRange for default resource limits
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: shopflow-limits
+  namespace: shopflow
+spec:
+  limits:
+    - default:
+        cpu: '500m'
+        memory: 512Mi
+      defaultRequest:
+        cpu: '100m'
+        memory: 128Mi
+      type: Container

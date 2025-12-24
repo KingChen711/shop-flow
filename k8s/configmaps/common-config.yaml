@@ -1,0 +1,18 @@
+# Common Configuration for all services
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: common-config
+  namespace: shopflow
+  labels:
+    app.kubernetes.io/part-of: shopflow-platform
+data:
+  NODE_ENV: 'production'
+  LOG_LEVEL: 'info'
+  # Kafka
+  KAFKA_BROKERS: 'kafka.shopflow.svc.cluster.local:9092'
+  # Redis
+  REDIS_HOST: 'redis.shopflow.svc.cluster.local'
+  REDIS_PORT: '6379'
+  # Elasticsearch
+  ELASTICSEARCH_NODE: 'http://elasticsearch.shopflow.svc.cluster.local:9200'

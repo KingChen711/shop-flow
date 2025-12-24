@@ -1,6 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 
 // ============================================
+// Observability (exported from subpath)
+// ============================================
+// Import via: import { MetricsModule, TracingModule, LoggingModule } from '@shopflow/shared-utils/observability';
+
+// ============================================
 // ID Generation
 // ============================================
 

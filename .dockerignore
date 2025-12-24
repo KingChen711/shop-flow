@@ -1,0 +1,57 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Build outputs
+**/dist
+**/.next
+**/out
+**/build
+
+# TypeScript incremental build cache (causes issues in Docker)
+**/tsconfig.tsbuildinfo
+
+# Development files
+**/.turbo
+**/.cache
+**/.eslintcache
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs
+**/*.log
+**/logs
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+**/coverage
+**/__tests__
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Environment files (handled separately)
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Docker files
+**/Dockerfile
+**/docker-compose*.yml
+**/.dockerignore
+
+# Kubernetes manifests (not needed in images)
+k8s/
+
+# Frontend apps (built separately)
+apps/

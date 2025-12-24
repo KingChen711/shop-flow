@@ -36,3 +36,38 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*~
+
+# Optional: uncomment if you don't want to share VS Code settings
+# .vscode/
+
+# TypeScript build info
+**/tsconfig.tsbuildinfo
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform tfvars (contains secrets) - only commit .example files
+terraform.tfvars
+*.auto.tfvars
+# BUT keep: terraform.tfvars.example (template)
+
+# NOTE: .terraform.lock.hcl SHOULD be committed (locks provider versions)
+
+# k6 load test outputs
+tests/load/k6/results/

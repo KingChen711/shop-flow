@@ -1,0 +1,109 @@
+# ============================================
+# Elasticsearch for Log Aggregation
+# ============================================
+# Note: For production, use Elasticsearch Operator or managed service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch-logs
+  namespace: monitoring
+  labels:
+    app: elasticsearch-logs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch-logs
+  template:
+    metadata:
+      labels:
+        app: elasticsearch-logs
+    spec:
+      initContainers:
+        - name: fix-permissions
+          image: busybox
+          command: ['sh', '-c', 'chown -R 1000:1000 /usr/share/elasticsearch/data']
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: storage
+              mountPath: /usr/share/elasticsearch/data
+        - name: increase-vm-max-map
+          image: busybox
+          command: ['sysctl', '-w', 'vm.max_map_count=262144']
+          securityContext:
+            privileged: true
+      containers:
+        - name: elasticsearch
+          image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+          env:
+            - name: discovery.type
+              value: single-node
+            - name: ES_JAVA_OPTS
+              value: '-Xms512m -Xmx512m'
+            - name: xpack.security.enabled
+              value: 'false'
+            - name: cluster.name
+              value: shopflow-logs
+          ports:
+            - containerPort: 9200
+              name: http
+            - containerPort: 9300
+              name: transport
+          resources:
+            requests:
+              cpu: 250m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+          volumeMounts:
+            - name: storage
+              mountPath: /usr/share/elasticsearch/data
+          readinessProbe:
+            httpGet:
+              path: /_cluster/health
+              port: 9200
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: elasticsearch-logs-pvc
+---
+# ============================================
+# Elasticsearch PVC
+# ============================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: elasticsearch-logs-pvc
+  namespace: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+# ============================================
+# Elasticsearch Service
+# ============================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-logs
+  namespace: monitoring
+  labels:
+    app: elasticsearch-logs
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9200
+      targetPort: 9200
+      name: http
+    - port: 9300
+      targetPort: 9300
+      name: transport
+  selector:
+    app: elasticsearch-logs

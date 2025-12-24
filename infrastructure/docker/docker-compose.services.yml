@@ -1,0 +1,285 @@
+# Docker Compose for ShopFlow Services
+# Use with: docker-compose -f docker-compose.yml -f docker-compose.services.yml up
+version: '3.8'
+
+services:
+  # ============================================
+  # API GATEWAY (HTTP REST)
+  # ============================================
+  api-gateway:
+    build:
+      context: ../..
+      dockerfile: services/api-gateway/Dockerfile
+    container_name: shopflow-api-gateway
+    environment:
+      NODE_ENV: production
+      PORT: 6000
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_EXPIRES_IN: 24h
+      # gRPC service URLs
+      USER_SERVICE_URL: user-service:50051
+      PRODUCT_SERVICE_URL: product-service:50052
+      ORDER_SERVICE_URL: order-service:50053
+      INVENTORY_SERVICE_URL: inventory-service:50054
+      PAYMENT_SERVICE_URL: payment-service:50055
+      CART_SERVICE_URL: cart-service:50058
+      SEARCH_SERVICE_URL: search-service:50057
+    ports:
+      - '6000:6000'
+    depends_on:
+      - user-service
+      - product-service
+      - order-service
+      - inventory-service
+      - payment-service
+      - cart-service
+      - search-service
+    networks:
+      - shopflow-network
+    restart: unless-stopped
+
+  # ============================================
+  # USER SERVICE (gRPC)
+  # ============================================
+  user-service:
+    build:
+      context: ../..
+      dockerfile: services/user-service/Dockerfile
+    container_name: shopflow-user-service
+    environment:
+      NODE_ENV: production
+      GRPC_PORT: 50051
+      DATABASE_HOST: postgres-user
+      DATABASE_PORT: 5432
+      DATABASE_USER: ${POSTGRES_USER:-shopflow}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-shopflow123}
+      DATABASE_NAME: user_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_EXPIRES_IN: 24h
+    ports:
+      - '50051:50051'
+    depends_on:
+      postgres-user:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - shopflow-network
+    restart: unless-stopped
+
+  # ============================================
+  # PRODUCT SERVICE (gRPC)
+  # ============================================
+  product-service:
+    build:
+      context: ../..
+      dockerfile: services/product-service/Dockerfile
+    container_name: shopflow-product-service
+    environment:
+      NODE_ENV: production
+      GRPC_PORT: 50052
+      DATABASE_HOST: postgres-product
+      DATABASE_PORT: 5432
+      DATABASE_USER: ${POSTGRES_USER:-shopflow}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-shopflow123}
+      DATABASE_NAME: product_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:29092
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    ports:
+      - '50052:50052'
+    depends_on:
+      postgres-product:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - shopflow-network
+    restart: unless-stopped
+
+  # ============================================
+  # ORDER SERVICE (gRPC)
+  # ============================================
+  order-service:
+    build:
+      context: ../..
+      dockerfile: services/order-service/Dockerfile
+    container_name: shopflow-order-service
+    environment:
+      NODE_ENV: production
+      GRPC_PORT: 50053
+      DB_HOST: postgres-order
+      DB_PORT: 5432
+      DB_USERNAME: ${POSTGRES_USER:-shopflow}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-shopflow123}
+      DB_DATABASE: order_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:29092
+      # gRPC clients
+      INVENTORY_SERVICE_URL: inventory-service:50054
+      PAYMENT_SERVICE_URL: payment-service:50055
+      USER_SERVICE_URL: user-service:50051
+    ports:
+      - '50053:50053'
+    depends_on:
+      postgres-order:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - shopflow-network
+    restart: unless-stopped
+
+  # ============================================
+  # INVENTORY SERVICE (gRPC)
+  # ============================================
+  inventory-service:
+    build:
+      context: ../..
+      dockerfile: services/inventory-service/Dockerfile
+    container_name: shopflow-inventory-service
+    environment:
+      NODE_ENV: production
+      GRPC_PORT: 50054
+      DB_HOST: postgres-inventory
+      DB_PORT: 5432
+      DB_USERNAME: ${POSTGRES_USER:-shopflow}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-shopflow123}
+      DB_DATABASE: inventory_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:29092
+    ports:
+      - '50054:50054'
+    depends_on:
+      postgres-inventory:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - shopflow-network
+    restart: unless-stopped
+
+  # ============================================
+  # PAYMENT SERVICE (gRPC)
+  # ============================================
+  payment-service:
+    build:
+      context: ../..
+      dockerfile: services/payment-service/Dockerfile
+    container_name: shopflow-payment-service
+    environment:
+      NODE_ENV: production
+      GRPC_PORT: 50055
+      DB_HOST: postgres-payment
+      DB_PORT: 5432
+      DB_USERNAME: ${POSTGRES_USER:-shopflow}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-shopflow123}
+      DB_DATABASE: payment_db
+      KAFKA_BROKERS: kafka:29092
+    ports:
+      - '50055:50055'
+    depends_on:
+      postgres-payment:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - shopflow-network
+    restart: unless-stopped
+
+  # ============================================
+  # NOTIFICATION SERVICE (gRPC)
+  # ============================================
+  notification-service:
+    build:
+      context: ../..
+      dockerfile: services/notification-service/Dockerfile
+    container_name: shopflow-notification-service
+    environment:
+      NODE_ENV: production
+      GRPC_PORT: 50056
+      DB_HOST: postgres-notification
+      DB_PORT: 5432
+      DB_USERNAME: ${POSTGRES_USER:-shopflow}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-shopflow123}
+      DB_DATABASE: notification_db
+      KAFKA_BROKERS: kafka:29092
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - '50056:50056'
+    depends_on:
+      postgres-notification:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - shopflow-network
+    restart: unless-stopped
+
+  # ============================================
+  # SEARCH SERVICE (gRPC)
+  # ============================================
+  search-service:
+    build:
+      context: ../..
+      dockerfile: services/search-service/Dockerfile
+    container_name: shopflow-search-service
+    environment:
+      NODE_ENV: production
+      GRPC_PORT: 50057
+      ELASTICSEARCH_NODE: http://elasticsearch:9200
+      KAFKA_BROKERS: kafka:29092
+    ports:
+      - '50057:50057'
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - shopflow-network
+    restart: unless-stopped
+
+  # ============================================
+  # CART SERVICE (gRPC)
+  # ============================================
+  cart-service:
+    build:
+      context: ../..
+      dockerfile: services/cart-service/Dockerfile
+    container_name: shopflow-cart-service
+    environment:
+      NODE_ENV: production
+      GRPC_PORT: 50058
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - '50058:50058'
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - shopflow-network
+    restart: unless-stopped
+
+networks:
+  shopflow-network:
+    external: true
+    name: shopflow-network

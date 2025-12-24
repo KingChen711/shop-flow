@@ -1,0 +1,114 @@
+# User Service Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-service-config
+  namespace: shopflow
+data:
+  GRPC_PORT: '50051'
+  DATABASE_HOST: 'postgres-user.shopflow.svc.cluster.local'
+  DATABASE_PORT: '5432'
+  DATABASE_NAME: 'user_db'
+  JWT_EXPIRES_IN: '24h'
+---
+# Product Service Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: product-service-config
+  namespace: shopflow
+data:
+  GRPC_PORT: '50052'
+  DATABASE_HOST: 'postgres-product.shopflow.svc.cluster.local'
+  DATABASE_PORT: '5432'
+  DATABASE_NAME: 'product_db'
+  MINIO_ENDPOINT: 'minio.shopflow.svc.cluster.local'
+  MINIO_PORT: '9000'
+  MINIO_BUCKET: 'products'
+---
+# Order Service Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: order-service-config
+  namespace: shopflow
+data:
+  GRPC_PORT: '50053'
+  DB_HOST: 'postgres-order.shopflow.svc.cluster.local'
+  DB_PORT: '5432'
+  DB_DATABASE: 'order_db'
+  INVENTORY_SERVICE_URL: 'inventory-service.shopflow.svc.cluster.local:50054'
+  PAYMENT_SERVICE_URL: 'payment-service.shopflow.svc.cluster.local:50055'
+  USER_SERVICE_URL: 'user-service.shopflow.svc.cluster.local:50051'
+---
+# Inventory Service Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inventory-service-config
+  namespace: shopflow
+data:
+  GRPC_PORT: '50054'
+  DB_HOST: 'postgres-inventory.shopflow.svc.cluster.local'
+  DB_PORT: '5432'
+  DB_DATABASE: 'inventory_db'
+---
+# Payment Service Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payment-service-config
+  namespace: shopflow
+data:
+  GRPC_PORT: '50055'
+  DB_HOST: 'postgres-payment.shopflow.svc.cluster.local'
+  DB_PORT: '5432'
+  DB_DATABASE: 'payment_db'
+---
+# Notification Service Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notification-service-config
+  namespace: shopflow
+data:
+  GRPC_PORT: '50056'
+  DB_HOST: 'postgres-notification.shopflow.svc.cluster.local'
+  DB_PORT: '5432'
+  DB_DATABASE: 'notification_db'
+---
+# Search Service Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: search-service-config
+  namespace: shopflow
+data:
+  GRPC_PORT: '50057'
+  ELASTICSEARCH_INDEX: 'products'
+---
+# Cart Service Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cart-service-config
+  namespace: shopflow
+data:
+  GRPC_PORT: '50058'
+  CART_TTL: '86400'
+---
+# API Gateway Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-gateway-config
+  namespace: shopflow
+data:
+  PORT: '6000'
+  USER_SERVICE_URL: 'user-service.shopflow.svc.cluster.local:50051'
+  PRODUCT_SERVICE_URL: 'product-service.shopflow.svc.cluster.local:50052'
+  ORDER_SERVICE_URL: 'order-service.shopflow.svc.cluster.local:50053'
+  INVENTORY_SERVICE_URL: 'inventory-service.shopflow.svc.cluster.local:50054'
+  PAYMENT_SERVICE_URL: 'payment-service.shopflow.svc.cluster.local:50055'
+  CART_SERVICE_URL: 'cart-service.shopflow.svc.cluster.local:50058'
+  SEARCH_SERVICE_URL: 'search-service.shopflow.svc.cluster.local:50057'

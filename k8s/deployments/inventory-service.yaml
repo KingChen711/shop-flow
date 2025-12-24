@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-service
+  namespace: shopflow
+  labels:
+    app: inventory-service
+    app.kubernetes.io/name: inventory-service
+    app.kubernetes.io/part-of: shopflow-platform
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: inventory-service
+  template:
+    metadata:
+      labels:
+        app: inventory-service
+    spec:
+      containers:
+        - name: inventory-service
+          image: shopflow/inventory-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 50054
+              name: grpc
+          envFrom:
+            - configMapRef:
+                name: common-config
+            - configMapRef:
+                name: inventory-service-config
+          env:
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: database-secrets
+                  key: DATABASE_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: database-secrets
+                  key: DATABASE_PASSWORD
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - 'node -e "require(''net'').connect(50054, ''localhost'').on(''error'', () => process.exit(1)).end()"'
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - 'node -e "require(''net'').connect(50054, ''localhost'').on(''error'', () => process.exit(1)).end()"'
+            initialDelaySeconds: 30
+            periodSeconds: 30
+      restartPolicy: Always
