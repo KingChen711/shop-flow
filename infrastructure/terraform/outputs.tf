@@ -107,6 +107,20 @@ output "s3_bucket_arns" {
 }
 
 # ============================================
+# ECR Outputs
+# ============================================
+
+output "ecr_repository_urls" {
+  description = "Map of ECR repository names to their URLs"
+  value       = module.ecr.repository_urls
+}
+
+output "ecr_repository_arns" {
+  description = "Map of ECR repository names to their ARNs"
+  value       = module.ecr.repository_arns
+}
+
+# ============================================
 # Connection Strings (for reference)
 # ============================================
 

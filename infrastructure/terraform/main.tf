@@ -222,6 +222,29 @@ module "s3" {
   tags = local.common_tags
 }
 
+# ECR Repositories
+module "ecr" {
+  source = "./modules/ecr"
+
+  name_prefix = local.name_prefix
+  environment = var.environment
+
+  # ECR repositories for all services
+  repositories = [
+    "user-service",
+    "product-service",
+    "order-service",
+    "inventory-service",
+    "payment-service",
+    "notification-service",
+    "search-service",
+    "cart-service",
+    "api-gateway"
+  ]
+
+  tags = local.common_tags
+}
+
 # ============================================
 # Kubernetes Resources (after EKS is ready)
 # ============================================
