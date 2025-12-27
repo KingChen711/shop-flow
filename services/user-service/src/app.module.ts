@@ -5,7 +5,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 // Infrastructure Modules
 import { DatabaseModule } from './infrastructure/persistence/database.module';
 import { KafkaModule } from './infrastructure/kafka/kafka.module';
-import { RedisModule } from './infrastructure/redis/redis.module';
+// import { RedisModule } from './infrastructure/redis/redis.module';
 
 // Domain & Application
 import { UserModule } from './domain/user.module';
@@ -24,7 +24,7 @@ import { UserModule } from './domain/user.module';
     // Infrastructure
     DatabaseModule,
     KafkaModule,
-    RedisModule,
+    // RedisModule,
 
     // Domain Modules
     UserModule,

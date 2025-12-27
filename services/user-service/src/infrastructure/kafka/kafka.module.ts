@@ -15,7 +15,10 @@ import { KafkaProducerService } from './kafka-producer.service';
           options: {
             client: {
               clientId: 'user-service',
-              brokers: [configService.get('KAFKA_BROKER', 'localhost:9092')],
+              brokers: configService
+                .get<string>('KAFKA_BROKERS', 'localhost:9092')
+                .split(',')
+                .map((b) => b.trim()),
             },
             consumer: {
               groupId: 'user-service-consumer',

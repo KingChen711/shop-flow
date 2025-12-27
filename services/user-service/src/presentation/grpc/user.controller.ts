@@ -47,8 +47,6 @@ export class UserGrpcController {
     phone?: string;
   }) {
     try {
-      this.logger.log(`Creating user with email: ${data.email}`);
-
       const command = new CreateUserCommand(
         data.email,
         data.password,

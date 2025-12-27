@@ -33,11 +33,14 @@ export class ProductCdcConsumer implements OnModuleInit, OnModuleDestroy {
     @Inject(SEARCH_REPOSITORY)
     private readonly searchRepository: ISearchRepository
   ) {
-    const broker = this.configService.get('KAFKA_BROKER', 'localhost:9092');
+    const brokers = this.configService
+      .get<string>('KAFKA_BROKERS', 'localhost:9092')
+      .split(',')
+      .map((b) => b.trim());
 
     this.kafka = new Kafka({
       clientId: 'search-service-cdc',
-      brokers: [broker],
+      brokers,
     });
 
     this.consumer = this.kafka.consumer({

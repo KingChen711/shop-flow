@@ -41,11 +41,14 @@ export class NotificationEventsConsumer implements OnModuleInit, OnModuleDestroy
     @Inject('TemplateRepository')
     private readonly templateRepository: ITemplateRepository
   ) {
-    const broker = this.configService.get('KAFKA_BROKER', 'localhost:9092');
+    const brokers = this.configService
+      .get<string>('KAFKA_BROKERS', 'localhost:9092')
+      .split(',')
+      .map((b) => b.trim());
 
     this.kafka = new Kafka({
       clientId: 'notification-service',
-      brokers: [broker],
+      brokers,
     });
 
     this.consumer = this.kafka.consumer({

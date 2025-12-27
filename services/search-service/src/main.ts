@@ -31,13 +31,11 @@ async function bootstrap() {
   await app.listen();
 
   const esNode = process.env.ELASTICSEARCH_NODE || 'http://localhost:9200';
-  const kafkaBroker = process.env.KAFKA_BROKER || 'localhost:9092';
 
   console.log(`
   🔍 Search Service is running on gRPC port ${grpcPort}
   📡 gRPC Reflection ${process.env.NODE_ENV === 'development' ? 'enabled' : 'disabled'}
   🔎 Elasticsearch: ${esNode}
-  📨 Kafka CDC: ${kafkaBroker}
   `);
 }
 
