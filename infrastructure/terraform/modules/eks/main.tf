@@ -232,3 +232,49 @@ resource "aws_eks_addon" "kube_proxy" {
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
 }
+
+# ============================================
+# AWS Auth ConfigMap for EKS Access
+# ============================================
+# This ConfigMap maps IAM users/roles to Kubernetes RBAC roles
+# Required for GitHub Actions and other external access
+
+locals {
+  # Extract username from IAM user ARN (format: arn:aws:iam::ACCOUNT:user/USERNAME)
+  github_actions_username = var.github_actions_iam_user_arn != "" ? split("/", var.github_actions_iam_user_arn)[1] : ""
+
+  # Build mapRoles YAML (always include node role)
+  map_roles_yaml = <<-YAML
+- rolearn: ${aws_iam_role.node.arn}
+  username: system:node:{{EC2PrivateDNSName}}
+  groups:
+    - system:bootstrappers
+    - system:nodes
+YAML
+
+  # Build mapUsers YAML template (only used if IAM user ARN is provided)
+  map_users_yaml_template = <<-YAML
+- userarn: ${var.github_actions_iam_user_arn}
+  username: ${local.github_actions_username}
+  groups:
+    - system:masters
+YAML
+
+  # Build mapUsers YAML (only if GitHub Actions IAM user ARN is provided)
+  map_users_yaml = var.github_actions_iam_user_arn != "" ? local.map_users_yaml_template : ""
+}
+
+# Update aws-auth ConfigMap to include GitHub Actions IAM user
+resource "kubernetes_config_map" "aws_auth" {
+  metadata {
+    name      = "aws-auth"
+    namespace = "kube-system"
+  }
+
+  data = {
+    mapRoles = local.map_roles_yaml
+    mapUsers = local.map_users_yaml
+  }
+
+  depends_on = [aws_eks_node_group.main]
+}

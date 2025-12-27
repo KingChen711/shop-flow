@@ -132,6 +132,8 @@ module "eks" {
 
   node_groups = var.eks_node_groups
 
+  github_actions_iam_user_arn = var.github_actions_iam_user_arn
+
   tags = local.common_tags
 }
 

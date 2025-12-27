@@ -26,6 +26,16 @@ eks_node_groups = {
   }
 }
 
+# GitHub Actions IAM User ARN for EKS access
+# Required for GitHub Actions to deploy to EKS cluster
+# Format: arn:aws:iam::ACCOUNT_ID:user/USERNAME
+# Example: arn:aws:iam::123456789012:user/github-actions
+# To find your IAM user ARN:
+# 1. Go to AWS Console → IAM → Users
+# 2. Click on the user used by GitHub Actions (the one with AWS_ACCESS_KEY_ID)
+# 3. Copy the ARN from the Summary page
+github_actions_iam_user_arn = "arn:aws:iam::YOUR_ACCOUNT_ID:user/YOUR_USERNAME"
+
 # RDS PostgreSQL
 rds_instance_class    = "db.t3.micro"
 rds_allocated_storage = 20

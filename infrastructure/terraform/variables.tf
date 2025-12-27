@@ -79,6 +79,12 @@ variable "eks_node_groups" {
   }
 }
 
+variable "github_actions_iam_user_arn" {
+  description = "IAM user ARN for GitHub Actions to access EKS cluster. Format: arn:aws:iam::ACCOUNT_ID:user/USERNAME"
+  type        = string
+  default     = ""
+}
+
 # ============================================
 # RDS Configuration
 # ============================================

@@ -46,3 +46,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "github_actions_iam_user_arn" {
+  description = "IAM user ARN for GitHub Actions to access EKS cluster"
+  type        = string
+  default     = ""
+}
