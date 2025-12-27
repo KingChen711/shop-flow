@@ -90,7 +90,7 @@ data "aws_caller_identity" "current" {}
 
 locals {
   name_prefix = "shopflow-${var.environment}"
-  
+
   azs = slice(data.aws_availability_zones.available.names, 0, 3)
 
   common_tags = {
@@ -109,7 +109,7 @@ module "vpc" {
 
   name_prefix = local.name_prefix
   environment = var.environment
-  
+
   vpc_cidr             = var.vpc_cidr
   availability_zones   = local.azs
   public_subnet_cidrs  = var.public_subnet_cidrs
@@ -129,7 +129,7 @@ module "eks" {
   private_subnets = module.vpc.private_subnet_ids
 
   cluster_version = var.eks_cluster_version
-  
+
   node_groups = var.eks_node_groups
 
   tags = local.common_tags
@@ -144,13 +144,13 @@ module "rds" {
 
   vpc_id          = module.vpc.vpc_id
   private_subnets = module.vpc.private_subnet_ids
-  
+
   # Allow access from EKS nodes
   allowed_security_groups = [module.eks.node_security_group_id]
 
   instance_class    = var.rds_instance_class
   allocated_storage = var.rds_allocated_storage
-  
+
   # Database names for each service
   databases = [
     "user_db",
@@ -176,7 +176,7 @@ module "elasticache" {
 
   vpc_id          = module.vpc.vpc_id
   private_subnets = module.vpc.private_subnet_ids
-  
+
   allowed_security_groups = [module.eks.node_security_group_id]
 
   node_type       = var.redis_node_type
@@ -194,7 +194,7 @@ module "msk" {
 
   vpc_id          = module.vpc.vpc_id
   private_subnets = module.vpc.private_subnet_ids
-  
+
   allowed_security_groups = [module.eks.node_security_group_id]
 
   kafka_version     = var.msk_kafka_version
@@ -211,12 +211,12 @@ module "s3" {
 
   name_prefix = local.name_prefix
   environment = var.environment
-  
+
   # Bucket names
   buckets = [
-    "products",      # Product images
-    "uploads",       # User uploads
-    "backups"        # Database backups
+    "products", # Product images
+    "uploads",  # User uploads
+    "backups"   # Database backups
   ]
 
   tags = local.common_tags
@@ -232,7 +232,7 @@ resource "kubernetes_namespace" "shopflow" {
 
   metadata {
     name = "shopflow"
-    
+
     labels = {
       name        = "shopflow"
       environment = var.environment
@@ -241,6 +241,8 @@ resource "kubernetes_namespace" "shopflow" {
 }
 
 # Store RDS connection info in K8s secret
+# Note: All services share the same RDS instance but use different database names
+# Terraform automatically base64-encodes data field
 resource "kubernetes_secret" "database_credentials" {
   depends_on = [kubernetes_namespace.shopflow]
 
@@ -260,6 +262,8 @@ resource "kubernetes_secret" "database_credentials" {
 }
 
 # Store Redis connection info in K8s secret
+# Format: ElastiCache endpoint (e.g., "shopflow-dev-redis.xxxxx.cache.amazonaws.com")
+# Note: In production, K8s overlays will override common-config to use this
 resource "kubernetes_secret" "redis_credentials" {
   depends_on = [kubernetes_namespace.shopflow]
 
@@ -270,13 +274,15 @@ resource "kubernetes_secret" "redis_credentials" {
 
   data = {
     host = module.elasticache.primary_endpoint
-    port = "6379"
+    port = tostring(module.elasticache.port)
   }
 
   type = "Opaque"
 }
 
 # Store Kafka connection info in K8s ConfigMap
+# MSK bootstrap_brokers format: "broker1:9092,broker2:9092"
+# This matches KAFKA_BROKERS format expected by services (comma-separated)
 resource "kubernetes_config_map" "kafka_config" {
   depends_on = [kubernetes_namespace.shopflow]
 
@@ -286,6 +292,9 @@ resource "kubernetes_config_map" "kafka_config" {
   }
 
   data = {
+    # MSK bootstrap_brokers is already in correct format: "broker1:9092,broker2:9092"
     bootstrap_servers = module.msk.bootstrap_brokers
+    # Also provide as KAFKA_BROKERS for direct use (matches common-config format)
+    KAFKA_BROKERS = module.msk.bootstrap_brokers
   }
 }

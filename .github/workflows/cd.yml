@@ -11,9 +11,9 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy to'
+        description: "Environment to deploy to"
         required: true
-        default: 'dev'
+        default: "dev"
         type: choice
         options:
           - dev
@@ -24,8 +24,8 @@ env:
   AWS_REGION: us-east-1
   ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
   EKS_CLUSTER_NAME: shopflow-${{ github.event.inputs.environment || 'dev' }}-eks
-  NODE_VERSION: '20'
-  PNPM_VERSION: '9.0.0'
+  NODE_VERSION: "20"
+  PNPM_VERSION: "9.0.0"
 
 jobs:
   # ============================================
@@ -116,10 +116,13 @@ jobs:
 
       - name: Deploy with Kustomize
         run: |
-          # Update image tags in kustomization
-          cd k8s
+          # Determine environment
+          ENV=${{ github.event.inputs.environment || 'dev' }}
 
-          # Set the new image tag for all services
+          # Navigate to the correct overlay
+          cd infrastructure/k8s/overlays/$ENV
+
+          # Set the new image tag for all services in the overlay
           kustomize edit set image \
             shopflow/user-service=${{ env.ECR_REGISTRY }}/shopflow/user-service:${{ github.sha }} \
             shopflow/product-service=${{ env.ECR_REGISTRY }}/shopflow/product-service:${{ github.sha }} \
@@ -131,7 +134,7 @@ jobs:
             shopflow/cart-service=${{ env.ECR_REGISTRY }}/shopflow/cart-service:${{ github.sha }} \
             shopflow/api-gateway=${{ env.ECR_REGISTRY }}/shopflow/api-gateway:${{ github.sha }}
 
-          # Apply the configuration
+          # Apply the configuration (overlay includes base + environment-specific resources)
           kubectl apply -k .
 
       - name: Wait for rollout

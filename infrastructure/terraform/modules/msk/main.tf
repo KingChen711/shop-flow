@@ -64,9 +64,9 @@ resource "aws_cloudwatch_log_group" "msk" {
 
 # MSK Configuration
 resource "aws_msk_configuration" "main" {
-  name              = "${var.name_prefix}-msk-config"
-  kafka_versions    = [var.kafka_version]
-  description       = "MSK configuration for ${var.name_prefix}"
+  name           = "${var.name_prefix}-msk-config"
+  kafka_versions = [var.kafka_version]
+  description    = "MSK configuration for ${var.name_prefix}"
 
   server_properties = <<PROPERTIES
 auto.create.topics.enable=true
@@ -109,7 +109,7 @@ resource "aws_msk_cluster" "main" {
       in_cluster    = true
     }
 
-    encryption_at_rest_kms_key_arn = null  # Uses AWS managed key
+    encryption_at_rest_kms_key_arn = null # Uses AWS managed key
   }
 
   open_monitoring {
