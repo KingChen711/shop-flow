@@ -1,0 +1,34 @@
+# Staging Environment Overlay
+# Uses AWS RDS for databases
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: shopflow
+
+resources:
+  - ../../base
+  # RDS connection secrets
+  - secrets/rds-secrets.yaml
+  # ExternalName services pointing to RDS
+  - secrets/rds-services.yaml
+
+commonLabels:
+  environment: staging
+
+# Patches for staging environment
+patches:
+  # Set replicas to 2 for staging
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+    target:
+      kind: Deployment
+      labelSelector: 'app.kubernetes.io/part-of=shopflow-platform'
+
+# ConfigMap overrides for staging
+configMapGenerator:
+  - name: staging-config
+    literals:
+      - NODE_ENV=staging
+      - LOG_LEVEL=info

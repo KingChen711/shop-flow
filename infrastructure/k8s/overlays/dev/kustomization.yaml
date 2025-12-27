@@ -1,0 +1,38 @@
+# Development Environment Overlay
+# Uses in-cluster PostgreSQL StatefulSets
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: shopflow
+
+resources:
+  - ../../base
+  # PostgreSQL databases running in K8s
+  - databases/postgres.yaml
+
+labels:
+  - pairs:
+      environment: development
+
+# Patches for dev environment
+patches:
+  # Reduce replicas for dev
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+    target:
+      kind: Deployment
+      labelSelector: 'app.kubernetes.io/part-of=shopflow-platform'
+
+  # Override NODE_ENV in common-config for development
+  - patch: |-
+      - op: replace
+        path: /data/NODE_ENV
+        value: "development"
+      - op: replace
+        path: /data/LOG_LEVEL
+        value: "debug"
+    target:
+      kind: ConfigMap
+      name: common-config

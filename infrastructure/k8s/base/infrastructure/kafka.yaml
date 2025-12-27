@@ -1,5 +1,6 @@
 # Kafka + Zookeeper for Kubernetes (Development)
 # For production, use Strimzi Operator or Confluent Platform
+# Note: Using emptyDir for dev - data is NOT persistent
 ---
 # Zookeeper
 apiVersion: apps/v1
@@ -17,6 +18,8 @@ spec:
       labels:
         app: zookeeper
     spec:
+      # Disable service links to prevent K8s injecting ZOOKEEPER_* env vars
+      enableServiceLinks: false
       containers:
         - name: zookeeper
           image: confluentinc/cp-zookeeper:7.5.0
@@ -34,6 +37,9 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
+      volumes:
+        - name: zookeeper-data
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
@@ -64,6 +70,8 @@ spec:
       labels:
         app: kafka
     spec:
+      # Disable service links to prevent K8s injecting KAFKA_* env vars that conflict with Kafka config
+      enableServiceLinks: false
       containers:
         - name: kafka
           image: confluentinc/cp-kafka:7.5.0
@@ -73,9 +81,9 @@ spec:
             - name: KAFKA_BROKER_ID
               value: '1'
             - name: KAFKA_ZOOKEEPER_CONNECT
-              value: 'zookeeper.shopflow.svc.cluster.local:2181'
+              value: 'zookeeper:2181'
             - name: KAFKA_ADVERTISED_LISTENERS
-              value: 'PLAINTEXT://kafka.shopflow.svc.cluster.local:9092'
+              value: 'PLAINTEXT://kafka:9092'
             - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
               value: 'PLAINTEXT:PLAINTEXT'
             - name: KAFKA_INTER_BROKER_LISTENER_NAME
@@ -91,6 +99,9 @@ spec:
             limits:
               cpu: 1000m
               memory: 2Gi
+      volumes:
+        - name: kafka-data
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
