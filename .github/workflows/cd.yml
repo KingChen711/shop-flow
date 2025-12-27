@@ -55,6 +55,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Validate GitHub Secrets
+        run: |
+          if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ] || [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ] || [ -z "${{ secrets.AWS_ACCOUNT_ID }}" ]; then
+            echo "❌ Error: GitHub Secrets are not configured!"
+            echo ""
+            echo "Please configure the following secrets in GitHub:"
+            echo "  - AWS_ACCESS_KEY_ID"
+            echo "  - AWS_SECRET_ACCESS_KEY"
+            echo "  - AWS_ACCOUNT_ID"
+            echo ""
+            echo "Go to: Repository → Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          echo "✅ GitHub Secrets are configured"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -102,6 +117,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Validate GitHub Secrets
+        run: |
+          if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ] || [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ] || [ -z "${{ secrets.AWS_ACCOUNT_ID }}" ]; then
+            echo "❌ Error: GitHub Secrets are not configured!"
+            echo ""
+            echo "Please configure the following secrets in GitHub:"
+            echo "  - AWS_ACCESS_KEY_ID"
+            echo "  - AWS_SECRET_ACCESS_KEY"
+            echo "  - AWS_ACCOUNT_ID"
+            echo ""
+            echo "Go to: Repository → Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          echo "✅ GitHub Secrets are configured"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -161,6 +191,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Validate GitHub Secrets
+        run: |
+          if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ] || [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ] || [ -z "${{ secrets.AWS_ACCOUNT_ID }}" ]; then
+            echo "❌ Error: GitHub Secrets are not configured!"
+            echo ""
+            echo "Please configure the following secrets in GitHub:"
+            echo "  - AWS_ACCESS_KEY_ID"
+            echo "  - AWS_SECRET_ACCESS_KEY"
+            echo "  - AWS_ACCOUNT_ID"
+            echo ""
+            echo "Go to: Repository → Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          echo "✅ GitHub Secrets are configured"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
