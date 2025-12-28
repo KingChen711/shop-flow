@@ -9,26 +9,26 @@ on:
   push:
     branches: [main]
     paths:
-      - 'infrastructure/terraform/**'
+      - "infrastructure/terraform/**"
   pull_request:
     branches: [main]
     paths:
-      - 'infrastructure/terraform/**'
+      - "infrastructure/terraform/**"
   workflow_dispatch:
     inputs:
       action:
-        description: 'Terraform action to perform'
+        description: "Terraform action to perform"
         required: true
-        default: 'plan'
+        default: "plan"
         type: choice
         options:
           - plan
           - apply
           - destroy
       environment:
-        description: 'Environment'
+        description: "Environment"
         required: true
-        default: 'dev'
+        default: "dev"
         type: choice
         options:
           - dev
@@ -36,7 +36,7 @@ on:
           - prod
 
 env:
-  TF_VERSION: '1.6.0'
+  TF_VERSION: "1.6.0"
   AWS_REGION: us-east-1
   TF_WORKING_DIR: infrastructure/terraform
 
@@ -96,11 +96,7 @@ jobs:
 
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: |
-          terraform init \
-            -backend-config="bucket=shopflow-terraform-state" \
-            -backend-config="key=${{ github.event.inputs.environment || 'dev' }}/terraform.tfstate" \
-            -backend-config="region=${{ env.AWS_REGION }}"
+        run: terraform init
 
       - name: Terraform Plan
         working-directory: ${{ env.TF_WORKING_DIR }}
@@ -144,11 +140,7 @@ jobs:
 
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: |
-          terraform init \
-            -backend-config="bucket=shopflow-terraform-state" \
-            -backend-config="key=${{ github.event.inputs.environment || 'dev' }}/terraform.tfstate" \
-            -backend-config="region=${{ env.AWS_REGION }}"
+        run: terraform init
 
       - name: Download Plan
         uses: actions/download-artifact@v4
@@ -204,11 +196,7 @@ jobs:
 
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: |
-          terraform init \
-            -backend-config="bucket=shopflow-terraform-state" \
-            -backend-config="key=${{ github.event.inputs.environment || 'dev' }}/terraform.tfstate" \
-            -backend-config="region=${{ env.AWS_REGION }}"
+        run: terraform init
 
       - name: Terraform Destroy
         working-directory: ${{ env.TF_WORKING_DIR }}
