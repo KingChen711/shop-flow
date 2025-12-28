@@ -137,6 +137,20 @@ module "eks" {
   tags = local.common_tags
 }
 
+# ============================================
+# EKS Access Entry for Terraform Executor
+# ============================================
+# Create Access Entry for current AWS caller (whoever is running Terraform)
+# This allows Terraform to create Kubernetes resources
+resource "aws_eks_access_entry" "terraform_executor" {
+  cluster_name      = module.eks.cluster_name
+  principal_arn     = data.aws_caller_identity.current.arn
+  kubernetes_groups = ["deployers"]
+  type              = "STANDARD"
+
+  depends_on = [module.eks]
+}
+
 # RDS PostgreSQL (Multiple databases)
 module "rds" {
   source = "./modules/rds"
@@ -251,9 +265,91 @@ module "ecr" {
 # Kubernetes Resources (after EKS is ready)
 # ============================================
 
+# ============================================
+# RBAC for EKS Access Entries
+# ============================================
+# Custom ClusterRole for deployers (principle of least privilege)
+# This replaces the need for system:masters group
+
+resource "kubernetes_cluster_role" "deployer" {
+  # Always create RBAC resources - both terraform executor and GitHub Actions need them
+  depends_on = [
+    module.eks,
+    aws_eks_access_entry.terraform_executor
+  ]
+
+  metadata {
+    name = "deployer-role"
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["pods", "services", "configmaps", "secrets", "namespaces"]
+    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
+  }
+
+  rule {
+    api_groups = ["apps"]
+    resources  = ["deployments", "replicasets", "statefulsets", "daemonsets"]
+    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
+  }
+
+  rule {
+    api_groups = ["batch"]
+    resources  = ["jobs", "cronjobs"]
+    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
+  }
+
+  rule {
+    api_groups = ["networking.k8s.io"]
+    resources  = ["ingresses", "ingressclasses"]
+    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["events"]
+    verbs      = ["get", "list", "watch"]
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["nodes"]
+    verbs      = ["get", "list", "watch"]
+  }
+}
+
+# ClusterRoleBinding to map deployers group to deployer-role
+resource "kubernetes_cluster_role_binding" "deployer" {
+  # Always create RBAC resources - both terraform executor and GitHub Actions need them
+  depends_on = [
+    module.eks,
+    aws_eks_access_entry.terraform_executor,
+    kubernetes_cluster_role.deployer
+  ]
+
+  metadata {
+    name = "deployer-binding"
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = kubernetes_cluster_role.deployer.metadata[0].name
+  }
+
+  subject {
+    kind = "Group"
+    name = "deployers" # Matches kubernetes_groups in aws_eks_access_entry.github_actions
+  }
+}
+
 # Create namespace
 resource "kubernetes_namespace" "shopflow" {
-  depends_on = [module.eks]
+  depends_on = [
+    module.eks,
+    aws_eks_access_entry.terraform_executor
+  ]
 
   metadata {
     name = "shopflow"

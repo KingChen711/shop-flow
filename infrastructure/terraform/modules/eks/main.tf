@@ -61,6 +61,13 @@ resource "aws_eks_cluster" "main" {
     endpoint_public_access  = true
   }
 
+  # Enable Access Entries API (AWS recommended method from 2023)
+  # API_AND_CONFIG_MAP mode allows both Access Entries and legacy aws-auth ConfigMap
+  # This provides backward compatibility while using the new method
+  access_config {
+    authentication_mode = "API_AND_CONFIG_MAP"
+  }
+
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
   tags = merge(var.tags, {
@@ -113,11 +120,11 @@ resource "aws_security_group" "node" {
   vpc_id      = var.vpc_id
 
   ingress {
-    description     = "Allow nodes to communicate with each other"
-    from_port       = 0
-    to_port         = 65535
-    protocol        = "tcp"
-    self            = true
+    description = "Allow nodes to communicate with each other"
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    self        = true
   }
 
   ingress {
@@ -234,47 +241,25 @@ resource "aws_eks_addon" "kube_proxy" {
 }
 
 # ============================================
-# AWS Auth ConfigMap for EKS Access
+# EKS Access Entries (AWS Recommended Method)
 # ============================================
-# This ConfigMap maps IAM users/roles to Kubernetes RBAC roles
-# Required for GitHub Actions and other external access
+# Using AWS EKS Access Entries API instead of manually managing aws-auth ConfigMap
+# This is the recommended approach from AWS (2023+) and avoids race conditions
 
-locals {
-  # Extract username from IAM user ARN (format: arn:aws:iam::ACCOUNT:user/USERNAME)
-  github_actions_username = var.github_actions_iam_user_arn != "" ? split("/", var.github_actions_iam_user_arn)[1] : ""
+# Access Entry for GitHub Actions IAM User (if provided)
+resource "aws_eks_access_entry" "github_actions" {
+  count = var.github_actions_iam_user_arn != "" ? 1 : 0
 
-  # Build mapRoles YAML (always include node role)
-  map_roles_yaml = <<-YAML
-- rolearn: ${aws_iam_role.node.arn}
-  username: system:node:{{EC2PrivateDNSName}}
-  groups:
-    - system:bootstrappers
-    - system:nodes
-YAML
+  cluster_name      = aws_eks_cluster.main.name
+  principal_arn     = var.github_actions_iam_user_arn
+  kubernetes_groups = ["deployers"] # Custom group, NOT system:masters (principle of least privilege)
+  type              = "STANDARD"
 
-  # Build mapUsers YAML template (only used if IAM user ARN is provided)
-  map_users_yaml_template = <<-YAML
-- userarn: ${var.github_actions_iam_user_arn}
-  username: ${local.github_actions_username}
-  groups:
-    - system:masters
-YAML
-
-  # Build mapUsers YAML (only if GitHub Actions IAM user ARN is provided)
-  map_users_yaml = var.github_actions_iam_user_arn != "" ? local.map_users_yaml_template : ""
+  depends_on = [aws_eks_cluster.main]
 }
 
-# Update aws-auth ConfigMap to include GitHub Actions IAM user
-resource "kubernetes_config_map" "aws_auth" {
-  metadata {
-    name      = "aws-auth"
-    namespace = "kube-system"
-  }
-
-  data = {
-    mapRoles = local.map_roles_yaml
-    mapUsers = local.map_users_yaml
-  }
-
-  depends_on = [aws_eks_node_group.main]
-}
+# NOTE: Node role does NOT need an Access Entry!
+# - EKS automatically manages node role via aws-auth ConfigMap
+# - With authentication_mode = "API_AND_CONFIG_MAP", nodes use ConfigMap path
+# - Access Entries API does not allow "system:" prefix groups
+# - Only create Access Entries for external principals (like GitHub Actions)

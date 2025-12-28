@@ -141,6 +141,13 @@ resource "aws_cloudwatch_log_group" "flow_log" {
   retention_in_days = 7
 
   tags = var.tags
+
+  # If log group already exists in AWS but not in Terraform state, import it:
+  # terraform import module.vpc.aws_cloudwatch_log_group.flow_log /aws/vpc/${var.name_prefix}-flow-logs
+  # Or delete it manually: aws logs delete-log-group --log-group-name /aws/vpc/${var.name_prefix}-flow-logs
+  lifecycle {
+    prevent_destroy = false
+  }
 }
 
 resource "aws_iam_role" "flow_log" {
