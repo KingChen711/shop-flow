@@ -63,12 +63,12 @@ resource "aws_elasticache_replication_group" "main" {
   subnet_group_name    = aws_elasticache_subnet_group.main.name
   security_group_ids   = [aws_security_group.redis.id]
 
-  engine               = "redis"
-  engine_version       = "7.1"
+  engine         = "redis"
+  engine_version = "7.1"
 
   # Encryption
   at_rest_encryption_enabled = true
-  transit_encryption_enabled = false  # Set to true if you need in-transit encryption
+  transit_encryption_enabled = false # Set to true if you need in-transit encryption
 
   # Maintenance
   maintenance_window       = "sun:05:00-sun:06:00"
@@ -79,7 +79,7 @@ resource "aws_elasticache_replication_group" "main" {
   automatic_failover_enabled = var.num_cache_nodes > 1
 
   # Notifications
-  notification_topic_arn = null  # Set to SNS topic ARN if you want notifications
+  notification_topic_arn = null # Set to SNS topic ARN if you want notifications
 
   tags = merge(var.tags, {
     Name = "${var.name_prefix}-redis"

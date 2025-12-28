@@ -1,0 +1,177 @@
+# AWS Development Environment Overlay
+# Uses AWS managed services (RDS, ElastiCache, MSK)
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: shopflow
+
+resources:
+  - ../../base
+
+labels:
+  - pairs:
+      environment: aws-development
+      deployment-type: aws-managed
+
+# Patches for AWS environment
+patches:
+  # Remove local infrastructure components (use AWS managed services)
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: redis
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: kafka
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: zookeeper
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: elasticsearch
+
+  # Remove local services
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: redis
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: kafka
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: zookeeper
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: elasticsearch
+
+  # Update common-config to use AWS managed services
+  - patch: |-
+      - op: replace
+        path: /data/NODE_ENV
+        value: "production"
+      - op: replace
+        path: /data/LOG_LEVEL
+        value: "info"
+      - op: replace
+        path: /data/DATABASE_HOST
+        value: "shopflow-dev-postgres.cizsy2ku632o.us-east-1.rds.amazonaws.com"
+      - op: replace
+        path: /data/DATABASE_PORT
+        value: "5432"
+      - op: replace
+        path: /data/REDIS_HOST
+        value: "shopflow-dev-redis.qzkcyf.ng.0001.use1.cache.amazonaws.com"
+      - op: replace
+        path: /data/REDIS_PORT
+        value: "6379"
+      - op: replace
+        path: /data/KAFKA_BROKERS
+        value: "b-1.shopflowdevkafka.jqxg43.c9.kafka.us-east-1.amazonaws.com:9092,b-2.shopflowdevkafka.jqxg43.c9.kafka.us-east-1.amazonaws.com:9092,b-3.shopflowdevkafka.jqxg43.c9.kafka.us-east-1.amazonaws.com:9092"
+    target:
+      kind: ConfigMap
+      name: common-config
+
+  # Update image tags to use ECR repositories
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/user-service:latest"
+    target:
+      kind: Deployment
+      name: user-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/product-service:latest"
+    target:
+      kind: Deployment
+      name: product-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/order-service:latest"
+    target:
+      kind: Deployment
+      name: order-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/inventory-service:latest"
+    target:
+      kind: Deployment
+      name: inventory-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/payment-service:latest"
+    target:
+      kind: Deployment
+      name: payment-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/notification-service:latest"
+    target:
+      kind: Deployment
+      name: notification-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/search-service:latest"
+    target:
+      kind: Deployment
+      name: search-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/cart-service:latest"
+    target:
+      kind: Deployment
+      name: cart-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/api-gateway:latest"
+    target:
+      kind: Deployment
+      name: api-gateway
+
+  # Reduce replicas for dev environment
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+    target:
+      kind: Deployment
+      labelSelector: "app.kubernetes.io/part-of=shopflow-platform"

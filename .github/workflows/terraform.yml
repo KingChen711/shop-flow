@@ -6,14 +6,17 @@
 name: Terraform
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "infrastructure/terraform/**"
-  pull_request:
-    branches: [main]
-    paths:
-      - "infrastructure/terraform/**"
+  # Disabled automatic triggers - infrastructure managed locally
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - "infrastructure/terraform/**"
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - "infrastructure/terraform/**"
+
+  # Only manual trigger when infrastructure changes needed
   workflow_dispatch:
     inputs:
       action:

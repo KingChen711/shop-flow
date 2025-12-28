@@ -36,3 +36,8 @@ output "identifier" {
   description = "RDS instance identifier"
   value       = aws_db_instance.main.identifier
 }
+
+output "instance_id" {
+  description = "RDS instance ID (same as identifier)"
+  value       = aws_db_instance.main.identifier
+}

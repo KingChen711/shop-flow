@@ -31,3 +31,8 @@ output "arn" {
   description = "ElastiCache ARN"
   value       = aws_elasticache_replication_group.main.arn
 }
+
+output "cluster_id" {
+  description = "ElastiCache cluster ID (same as replication group ID)"
+  value       = aws_elasticache_replication_group.main.id
+}
