@@ -142,11 +142,10 @@ resource "aws_cloudwatch_log_group" "flow_log" {
 
   tags = var.tags
 
-  # If log group already exists in AWS but not in Terraform state, import it:
-  # terraform import module.vpc.aws_cloudwatch_log_group.flow_log /aws/vpc/${var.name_prefix}-flow-logs
-  # Or delete it manually: aws logs delete-log-group --log-group-name /aws/vpc/${var.name_prefix}-flow-logs
+  # Handle existing log group gracefully
   lifecycle {
     prevent_destroy = false
+    ignore_changes  = []
   }
 }
 

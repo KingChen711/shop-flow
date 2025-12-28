@@ -138,14 +138,13 @@ module "eks" {
 }
 
 # ============================================
-# EKS Access Entry for Terraform Executor
+# EKS Access Entry for Terraform Executor (Local iamadmin)
 # ============================================
-# Create Access Entry for current AWS caller (whoever is running Terraform)
-# This allows Terraform to create Kubernetes resources
+# Create Access Entry for current AWS caller (iamadmin for local development)
 resource "aws_eks_access_entry" "terraform_executor" {
   cluster_name      = module.eks.cluster_name
   principal_arn     = data.aws_caller_identity.current.arn
-  kubernetes_groups = ["deployers"]
+  kubernetes_groups = ["deployers"] # Use custom deployers group with full permissions
   type              = "STANDARD"
 
   depends_on = [module.eks]
@@ -268,11 +267,10 @@ module "ecr" {
 # ============================================
 # RBAC for EKS Access Entries
 # ============================================
-# Custom ClusterRole for deployers (principle of least privilege)
-# This replaces the need for system:masters group
+# Custom ClusterRole for deployers with full admin permissions
+# This is used by both local admin and GitHub Actions for CI/CD deployments
 
 resource "kubernetes_cluster_role" "deployer" {
-  # Always create RBAC resources - both terraform executor and GitHub Actions need them
   depends_on = [
     module.eks,
     aws_eks_access_entry.terraform_executor
@@ -282,46 +280,16 @@ resource "kubernetes_cluster_role" "deployer" {
     name = "deployer-role"
   }
 
+  # Full admin permissions for deployers
   rule {
-    api_groups = [""]
-    resources  = ["pods", "services", "configmaps", "secrets", "namespaces"]
-    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
-  }
-
-  rule {
-    api_groups = ["apps"]
-    resources  = ["deployments", "replicasets", "statefulsets", "daemonsets"]
-    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
-  }
-
-  rule {
-    api_groups = ["batch"]
-    resources  = ["jobs", "cronjobs"]
-    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
-  }
-
-  rule {
-    api_groups = ["networking.k8s.io"]
-    resources  = ["ingresses", "ingressclasses"]
-    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
-  }
-
-  rule {
-    api_groups = [""]
-    resources  = ["events"]
-    verbs      = ["get", "list", "watch"]
-  }
-
-  rule {
-    api_groups = [""]
-    resources  = ["nodes"]
-    verbs      = ["get", "list", "watch"]
+    api_groups = ["*"]
+    resources  = ["*"]
+    verbs      = ["*"]
   }
 }
 
 # ClusterRoleBinding to map deployers group to deployer-role
 resource "kubernetes_cluster_role_binding" "deployer" {
-  # Always create RBAC resources - both terraform executor and GitHub Actions need them
   depends_on = [
     module.eks,
     aws_eks_access_entry.terraform_executor,
@@ -340,7 +308,7 @@ resource "kubernetes_cluster_role_binding" "deployer" {
 
   subject {
     kind = "Group"
-    name = "deployers" # Matches kubernetes_groups in aws_eks_access_entry.github_actions
+    name = "deployers" # Matches kubernetes_groups in aws_eks_access_entry
   }
 }
 
