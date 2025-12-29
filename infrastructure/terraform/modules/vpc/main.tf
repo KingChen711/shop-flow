@@ -145,7 +145,7 @@ resource "aws_cloudwatch_log_group" "flow_log" {
   # Handle existing log group gracefully
   lifecycle {
     prevent_destroy = false
-    ignore_changes  = []
+    ignore_changes  = [retention_in_days]
   }
 }
 

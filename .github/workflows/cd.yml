@@ -17,8 +17,7 @@ on:
         type: choice
         options:
           - dev
-          - staging
-          - prod
+          - aws-dev
 
 env:
   AWS_REGION: us-east-1

@@ -1,5 +1,19 @@
 # AWS Development Environment Overlay
 # Uses AWS managed services (RDS, ElastiCache, MSK)
+#
+# COST OPTIMIZATION STRATEGY:
+# - Single replica deployments (1 pod per service)
+# - Reduced resource limits (t3.micro compatible: 1 vCPU, 1GB RAM)
+# - CPU requests: 50m, limits: 200m per container
+# - Memory requests: 64Mi, limits: 256Mi per container
+# - Uses AWS free tier eligible services where possible:
+#   * RDS db.t3.micro (PostgreSQL)
+#   * ElastiCache cache.t3.micro (Redis)
+#   * MSK kafka.t3.small (minimum for MSK)
+# - ECR for container images (pay per GB stored/transferred)
+#
+# Total estimated monthly cost: ~$50-80 USD
+# (Primarily MSK ~$40/month, RDS ~$15/month, ElastiCache ~$10/month)
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -16,58 +30,88 @@ labels:
 # Patches for AWS environment
 patches:
   # Remove local infrastructure components (use AWS managed services)
+  # Redis components
   - patch: |-
       $patch: delete
       apiVersion: apps/v1
       kind: Deployment
       metadata:
         name: redis
-  - patch: |-
-      $patch: delete
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: kafka
-  - patch: |-
-      $patch: delete
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: zookeeper
-  - patch: |-
-      $patch: delete
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: elasticsearch
-
-  # Remove local services
+        namespace: shopflow
   - patch: |-
       $patch: delete
       apiVersion: v1
       kind: Service
       metadata:
         name: redis
+        namespace: shopflow
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: redis-pvc
+        namespace: shopflow
+
+  # Kafka components
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: kafka
+        namespace: shopflow
   - patch: |-
       $patch: delete
       apiVersion: v1
       kind: Service
       metadata:
         name: kafka
+        namespace: shopflow
+
+  # Zookeeper components
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: zookeeper
+        namespace: shopflow
   - patch: |-
       $patch: delete
       apiVersion: v1
       kind: Service
       metadata:
         name: zookeeper
+        namespace: shopflow
+
+  # Elasticsearch components
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: elasticsearch
+        namespace: shopflow
   - patch: |-
       $patch: delete
       apiVersion: v1
       kind: Service
       metadata:
         name: elasticsearch
+        namespace: shopflow
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: elasticsearch-pvc
+        namespace: shopflow
 
-  # Update common-config to use AWS managed services
+  # Update common-config to use AWS managed services (cost-optimized)
+  # RDS: db.t3.micro (free tier eligible, 1 vCPU, 1GB RAM)
+  # ElastiCache: cache.t3.micro (1 vCPU, 0.5GB RAM)
+  # MSK: kafka.t3.small (minimum instance type for MSK)
   - patch: |-
       - op: replace
         path: /data/NODE_ENV
@@ -94,7 +138,9 @@ patches:
       kind: ConfigMap
       name: common-config
 
-  # Update image tags to use ECR repositories
+  # Update image tags to use ECR repositories (cost-optimized)
+  # ECR pricing: $0.10 per GB-month for storage, $0.09 per GB for data transfer
+  # Using 'latest' tag for development simplicity
   - patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/image
@@ -167,11 +213,38 @@ patches:
       kind: Deployment
       name: api-gateway
 
-  # Reduce replicas for dev environment
+  # Reduce replicas for dev environment (cost optimization)
   - patch: |-
       - op: replace
         path: /spec/replicas
         value: 1
+    target:
+      kind: Deployment
+      labelSelector: "app.kubernetes.io/part-of=shopflow-platform"
+
+  # Optimize resource limits for cost efficiency (t3.micro compatible)
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+    target:
+      kind: Deployment
+      labelSelector: "app.kubernetes.io/part-of=shopflow-platform"
+
+  # Add cost optimization annotations
+  - patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          cost-optimization: "true"
+          environment: "learning"
+          aws-instance-type: "t3.micro"
     target:
       kind: Deployment
       labelSelector: "app.kubernetes.io/part-of=shopflow-platform"

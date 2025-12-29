@@ -263,7 +263,13 @@ module "ecr" {
 # ============================================
 # Kubernetes Resources (after EKS is ready)
 # ============================================
+# NOTE: Kubernetes resources are managed separately via kubectl/kustomize
+# This avoids timing and permission issues during initial cluster creation
 
+# Uncomment these resources after EKS cluster is created and kubectl is configured
+# They can be applied in a second terraform run or managed via kubectl directly
+
+/*
 # ============================================
 # RBAC for EKS Access Entries
 # ============================================
@@ -352,7 +358,7 @@ resource "kubernetes_secret" "database_credentials" {
 
 # Store Redis connection info in K8s secret
 # Format: ElastiCache endpoint (e.g., "shopflow-dev-redis.xxxxx.cache.amazonaws.com")
-# Note: In production, K8s overlays will override common-config to use this
+# Note: In aws-dev, K8s overlays will override common-config to use this
 resource "kubernetes_secret" "redis_credentials" {
   depends_on = [kubernetes_namespace.shopflow]
 
@@ -387,3 +393,4 @@ resource "kubernetes_config_map" "kafka_config" {
     KAFKA_BROKERS = module.msk.bootstrap_brokers
   }
 }
+*/
