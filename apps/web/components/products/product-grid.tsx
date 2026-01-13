@@ -1,7 +1,8 @@
 import { ProductCard, type Product } from './product-card';
+import type { Product as ApiProduct } from '@/lib/api/products';
 
 interface ProductGridProps {
-  products: Product[];
+  products: (Product | ApiProduct)[];
   columns?: 2 | 3 | 4;
 }
 

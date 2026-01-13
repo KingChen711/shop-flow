@@ -2,29 +2,46 @@ import { apiClient } from './client';
 
 export interface CartItem {
   productId: string;
-  name: string;
+  productName: string;
   price: number;
   quantity: number;
-  image?: string;
+  imageUrl?: string;
+  subtotal: number;
 }
 
 export interface Cart {
-  id: string;
+  userId: string;
   items: CartItem[];
-  subtotal: number;
+  total: number;
   itemCount: number;
+  updatedAt: string;
+}
+
+export interface CartSummary {
+  userId: string;
+  itemCount: number;
+  total: number;
+}
+
+export interface AddToCartDto {
+  productId: string;
+  productName: string;
+  price: number;
+  quantity: number;
+  imageUrl?: string;
 }
 
 export const cartApi = {
-  get: () => apiClient.get<Cart>('/api/cart'),
+  get: () => apiClient.get<Cart>('/cart'),
 
-  addItem: (productId: string, quantity: number) =>
-    apiClient.post<Cart>('/api/cart/items', { productId, quantity }),
+  getSummary: () => apiClient.get<CartSummary>('/cart/summary'),
+
+  addItem: (data: AddToCartDto) => apiClient.post<Cart>('/cart/items', data),
 
   updateItem: (productId: string, quantity: number) =>
-    apiClient.put<Cart>(`/api/cart/items/${productId}`, { quantity }),
+    apiClient.put<Cart>(`/cart/items/${productId}`, { quantity }),
 
-  removeItem: (productId: string) => apiClient.delete<Cart>(`/api/cart/items/${productId}`),
+  removeItem: (productId: string) => apiClient.delete<Cart>(`/cart/items/${productId}`),
 
-  clear: () => apiClient.delete<void>('/api/cart'),
+  clear: () => apiClient.delete<{ success: boolean; message: string }>('/cart'),
 };

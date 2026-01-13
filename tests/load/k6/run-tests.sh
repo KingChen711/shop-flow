@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-BASE_URL=${BASE_URL:-"http://localhost:6000"}
+BASE_URL=${BASE_URL:-"http://localhost:5000"}
 RESULTS_DIR="./results"
 
 # Colors for output

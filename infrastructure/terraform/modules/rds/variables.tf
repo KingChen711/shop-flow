@@ -27,6 +27,11 @@ variable "allowed_security_groups" {
   type        = list(string)
 }
 
+variable "vpc_cidr" {
+  description = "VPC CIDR block for allowing connections from EKS pods"
+  type        = string
+}
+
 variable "instance_class" {
   description = "RDS instance class"
   type        = string

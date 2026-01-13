@@ -105,10 +105,10 @@ terraform/
 
 ### Required Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `aws_region` | AWS region | `us-east-1` |
-| `environment` | Environment name | `dev`, `staging`, `prod` |
+| Variable              | Description         | Example               |
+| --------------------- | ------------------- | --------------------- |
+| `aws_region`          | AWS region          | `us-east-1`           |
+| `environment`         | Environment name    | `dev`, `aws-dev`      |
 | `rds_master_password` | RDS master password | (use secrets manager) |
 
 ### Optional Variables
@@ -118,21 +118,18 @@ See `variables.tf` for all available configuration options.
 ## Environments
 
 ### Development (`dev`)
+
 - Single NAT Gateway
 - Smaller instance types
 - Minimal redundancy
 - Estimated cost: ~$200-300/month
 
-### Staging (`staging`)
-- Multi-AZ setup
-- Production-like configuration
-- Estimated cost: ~$400-600/month
+### AWS Development (`aws-dev`)
 
-### Production (`prod`)
-- Full HA configuration
-- Multi-AZ everything
-- Enhanced monitoring
-- Estimated cost: ~$1000-2000/month
+- AWS managed services (RDS, ElastiCache, MSK)
+- Cost-optimized configuration
+- Learning-focused setup
+- Estimated cost: ~$150-250/month
 
 ## Outputs
 

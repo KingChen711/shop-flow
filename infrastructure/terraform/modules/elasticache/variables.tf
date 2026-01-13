@@ -27,6 +27,11 @@ variable "allowed_security_groups" {
   type        = list(string)
 }
 
+variable "vpc_cidr" {
+  description = "VPC CIDR block for allowing access"
+  type        = string
+}
+
 variable "node_type" {
   description = "ElastiCache node type"
   type        = string

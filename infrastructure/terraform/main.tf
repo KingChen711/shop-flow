@@ -137,6 +137,31 @@ module "eks" {
   tags = local.common_tags
 }
 
+# ============================================
+# EKS Access Entry for Terraform Executor (Local iamadmin)
+# ============================================
+# Create Access Entry for current AWS caller (iamadmin for local development)
+resource "aws_eks_access_entry" "terraform_executor" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = data.aws_caller_identity.current.arn
+  type          = "STANDARD"
+
+  depends_on = [module.eks]
+}
+
+# Associate with cluster-admin policy
+resource "aws_eks_access_policy_association" "terraform_executor_admin" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = data.aws_caller_identity.current.arn
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+  access_scope {
+    type = "cluster"
+  }
+
+  depends_on = [aws_eks_access_entry.terraform_executor]
+}
+
 # RDS PostgreSQL (Multiple databases)
 module "rds" {
   source = "./modules/rds"
@@ -149,6 +174,7 @@ module "rds" {
 
   # Allow access from EKS nodes
   allowed_security_groups = [module.eks.node_security_group_id]
+  vpc_cidr                = var.vpc_cidr
 
   instance_class    = var.rds_instance_class
   allocated_storage = var.rds_allocated_storage
@@ -180,6 +206,7 @@ module "elasticache" {
   private_subnets = module.vpc.private_subnet_ids
 
   allowed_security_groups = [module.eks.node_security_group_id]
+  vpc_cidr                = var.vpc_cidr
 
   node_type       = var.redis_node_type
   num_cache_nodes = var.redis_num_nodes
@@ -198,6 +225,7 @@ module "msk" {
   private_subnets = module.vpc.private_subnet_ids
 
   allowed_security_groups = [module.eks.node_security_group_id]
+  vpc_cidr                = var.vpc_cidr
 
   kafka_version     = var.msk_kafka_version
   instance_type     = var.msk_instance_type
@@ -247,13 +275,37 @@ module "ecr" {
   tags = local.common_tags
 }
 
+# OpenSearch (Public domain for simplicity)
+module "opensearch" {
+  source = "./modules/opensearch"
+
+  name_prefix = local.name_prefix
+  environment = var.environment
+
+  vpc_id                  = module.vpc.vpc_id
+  vpc_cidr                = module.vpc.vpc_cidr
+  private_subnets         = [module.vpc.private_subnet_ids[0]] # Single subnet
+  allowed_security_groups = [module.eks.node_security_group_id]
+
+  instance_type  = var.opensearch_instance_type
+  instance_count = var.opensearch_instance_count
+  volume_size    = var.opensearch_volume_size
+  engine_version = var.opensearch_engine_version
+
+  tags = local.common_tags
+}
+
 # ============================================
 # Kubernetes Resources (after EKS is ready)
 # ============================================
 
 # Create namespace
 resource "kubernetes_namespace" "shopflow" {
-  depends_on = [module.eks]
+  depends_on = [
+    module.eks,
+    aws_eks_access_entry.terraform_executor,
+    aws_eks_access_policy_association.terraform_executor_admin
+  ]
 
   metadata {
     name = "shopflow"
@@ -272,15 +324,13 @@ resource "kubernetes_secret" "database_credentials" {
   depends_on = [kubernetes_namespace.shopflow]
 
   metadata {
-    name      = "database-credentials"
+    name      = "database-secrets" # Match the name used in K8s manifests
     namespace = "shopflow"
   }
 
   data = {
-    host     = module.rds.endpoint
-    port     = "5432"
-    username = var.rds_master_username
-    password = var.rds_master_password
+    DATABASE_USER     = var.rds_master_username
+    DATABASE_PASSWORD = var.rds_master_password
   }
 
   type = "Opaque"
@@ -288,7 +338,7 @@ resource "kubernetes_secret" "database_credentials" {
 
 # Store Redis connection info in K8s secret
 # Format: ElastiCache endpoint (e.g., "shopflow-dev-redis.xxxxx.cache.amazonaws.com")
-# Note: In production, K8s overlays will override common-config to use this
+# Note: In aws-dev, K8s overlays will override common-config to use this
 resource "kubernetes_secret" "redis_credentials" {
   depends_on = [kubernetes_namespace.shopflow]
 
@@ -321,5 +371,66 @@ resource "kubernetes_config_map" "kafka_config" {
     bootstrap_servers = module.msk.bootstrap_brokers
     # Also provide as KAFKA_BROKERS for direct use (matches common-config format)
     KAFKA_BROKERS = module.msk.bootstrap_brokers
+  }
+}
+
+# Store OpenSearch connection info in K8s ConfigMap
+resource "kubernetes_config_map" "opensearch_config" {
+  depends_on = [kubernetes_namespace.shopflow]
+
+  metadata {
+    name      = "opensearch-config"
+    namespace = "shopflow"
+  }
+
+  data = {
+    ELASTICSEARCH_NODE = "https://${module.opensearch.domain_endpoint}"
+  }
+}
+
+# Patch existing ConfigMaps with AWS endpoints using null_resource
+resource "null_resource" "update_configmaps" {
+  depends_on = [
+    kubernetes_namespace.shopflow,
+    module.rds,
+    module.elasticache,
+    module.msk,
+    module.opensearch
+  ]
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      # Wait for ConfigMaps to exist (created by Kustomize)
+      Write-Host "Waiting for Kustomize ConfigMaps to be created..."
+      Start-Sleep -Seconds 30
+      
+      # Update common-config with AWS endpoints
+      kubectl patch configmap common-config -n shopflow --type merge -p='{"data": {"DATABASE_HOST": "${module.rds.endpoint}", "DATABASE_PORT": "5432", "REDIS_HOST": "${module.elasticache.primary_endpoint}", "REDIS_PORT": "6379", "KAFKA_BROKERS": "${module.msk.bootstrap_brokers}", "ELASTICSEARCH_NODE": "https://${module.opensearch.domain_endpoint}"}}' || Write-Host "common-config not found, skipping"
+      
+      # Update service-specific ConfigMaps
+      kubectl patch configmap user-service-config -n shopflow --type merge -p='{"data": {"DATABASE_HOST": "${module.rds.endpoint}", "DATABASE_SSL_MODE": "disable"}}' || Write-Host "user-service-config not found, skipping"
+      
+      kubectl patch configmap product-service-config -n shopflow --type merge -p='{"data": {"DATABASE_HOST": "${module.rds.endpoint}", "DATABASE_SSL_MODE": "disable"}}' || Write-Host "product-service-config not found, skipping"
+      
+      kubectl patch configmap order-service-config -n shopflow --type merge -p='{"data": {"DB_HOST": "${module.rds.endpoint}", "DB_SSL_MODE": "disable"}}' || Write-Host "order-service-config not found, skipping"
+      
+      kubectl patch configmap inventory-service-config -n shopflow --type merge -p='{"data": {"DB_HOST": "${module.rds.endpoint}", "DB_SSL_MODE": "disable"}}' || Write-Host "inventory-service-config not found, skipping"
+      
+      kubectl patch configmap payment-service-config -n shopflow --type merge -p='{"data": {"DB_HOST": "${module.rds.endpoint}", "DB_SSL_MODE": "disable"}}' || Write-Host "payment-service-config not found, skipping"
+      
+      kubectl patch configmap notification-service-config -n shopflow --type merge -p='{"data": {"DB_HOST": "${module.rds.endpoint}", "DB_SSL_MODE": "disable"}}' || Write-Host "notification-service-config not found, skipping"
+      
+      Write-Host "ConfigMaps updated with AWS endpoints!"
+    EOT
+
+    interpreter = ["PowerShell", "-Command"]
+  }
+
+  # Trigger re-run when endpoints change
+  triggers = {
+    rds_endpoint        = module.rds.endpoint
+    redis_endpoint      = module.elasticache.primary_endpoint
+    kafka_brokers       = module.msk.bootstrap_brokers
+    opensearch_endpoint = module.opensearch.domain_endpoint
   }
 }

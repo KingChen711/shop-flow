@@ -121,6 +121,20 @@ output "ecr_repository_arns" {
 }
 
 # ============================================
+# OpenSearch Outputs
+# ============================================
+
+output "opensearch_domain_endpoint" {
+  description = "OpenSearch domain endpoint"
+  value       = module.opensearch.domain_endpoint
+}
+
+output "opensearch_domain_arn" {
+  description = "OpenSearch domain ARN"
+  value       = module.opensearch.domain_arn
+}
+
+# ============================================
 # Connection Strings (for reference)
 # ============================================
 

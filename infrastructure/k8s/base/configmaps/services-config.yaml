@@ -9,6 +9,7 @@ data:
   DATABASE_HOST: 'postgres-user'
   DATABASE_PORT: '5432'
   DATABASE_NAME: 'user_db'
+  DATABASE_SSL_MODE: 'disable'
   JWT_EXPIRES_IN: '24h'
 ---
 # Product Service Configuration
@@ -22,6 +23,7 @@ data:
   DATABASE_HOST: 'postgres-product'
   DATABASE_PORT: '5432'
   DATABASE_NAME: 'product_db'
+  DATABASE_SSL_MODE: 'disable'
   MINIO_ENDPOINT: 'minio'
   MINIO_PORT: '9000'
   MINIO_BUCKET: 'products'
@@ -37,6 +39,7 @@ data:
   DB_HOST: 'postgres-order'
   DB_PORT: '5432'
   DB_DATABASE: 'order_db'
+  DB_SSL_MODE: 'disable'
   INVENTORY_SERVICE_URL: 'inventory-service:50054'
   PAYMENT_SERVICE_URL: 'payment-service:50055'
   USER_SERVICE_URL: 'user-service:50051'
@@ -52,6 +55,7 @@ data:
   DB_HOST: 'postgres-inventory'
   DB_PORT: '5432'
   DB_DATABASE: 'inventory_db'
+  DB_SSL_MODE: 'disable'
 ---
 # Payment Service Configuration
 apiVersion: v1
@@ -64,6 +68,7 @@ data:
   DB_HOST: 'postgres-payment'
   DB_PORT: '5432'
   DB_DATABASE: 'payment_db'
+  DB_SSL_MODE: 'disable'
 ---
 # Notification Service Configuration
 apiVersion: v1
@@ -76,6 +81,7 @@ data:
   DB_HOST: 'postgres-notification'
   DB_PORT: '5432'
   DB_DATABASE: 'notification_db'
+  DB_SSL_MODE: 'disable'
 ---
 # Search Service Configuration
 apiVersion: v1
@@ -104,7 +110,7 @@ metadata:
   name: api-gateway-config
   namespace: shopflow
 data:
-  PORT: '6000'
+  PORT: '5000'
   USER_SERVICE_URL: 'user-service:50051'
   PRODUCT_SERVICE_URL: 'product-service:50052'
   ORDER_SERVICE_URL: 'order-service:50053'

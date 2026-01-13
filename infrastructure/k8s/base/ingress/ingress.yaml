@@ -31,7 +31,7 @@ spec:
               service:
                 name: api-gateway
                 port:
-                  number: 6000
+                  number: 5000
     # Alternative: Use path-based routing without host
     - http:
         paths:
@@ -41,7 +41,7 @@ spec:
               service:
                 name: api-gateway
                 port:
-                  number: 6000
+                  number: 5000
 ---
 # Optional: Ingress for development without hostname (NodePort alternative)
 apiVersion: v1
@@ -56,8 +56,8 @@ spec:
   selector:
     app: api-gateway
   ports:
-    - port: 6000
-      targetPort: 6000
+    - port: 5000
+      targetPort: 5000
       nodePort: 30000
       protocol: TCP
       name: http

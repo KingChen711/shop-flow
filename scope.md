@@ -647,9 +647,8 @@ config:
 │   ├── 📁 kubernetes/
 │   │   ├── 📁 base/
 │   │   ├── 📁 overlays/
-│   │   │   ├── 📁 development/
-│   │   │   ├── 📁 staging/
-│   │   │   └── 📁 production/
+│   │   │   ├── 📁 dev/
+│   │   │   └── 📁 aws-dev/
 │   │   └── 📁 charts/             # Helm charts
 │   └── 📁 terraform/              # AWS Infrastructure
 │       ├── 📁 modules/
@@ -659,8 +658,7 @@ config:
 │       │   └── 📁 msk/
 │       └── 📁 environments/
 │           ├── 📁 dev/
-│           ├── 📁 staging/
-│           └── 📁 prod/
+│           └── 📁 aws-dev/
 └── 📁 tools/
     ├── 📁 scripts/
     └── 📁 generators/
@@ -742,7 +740,7 @@ spec:
               service:
                 name: grpc-gateway
                 port:
-                  number: 6000
+                  number: 5000
     - host: www.shopflow.com
       http:
         paths:

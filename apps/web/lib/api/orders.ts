@@ -1,34 +1,37 @@
-import { apiClient, type PaginatedResponse } from './client';
+import { apiClient } from './client';
 
-export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+export type OrderStatus =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'PROCESSING'
+  | 'SHIPPED'
+  | 'DELIVERED'
+  | 'CANCELLED'
+  | 'FAILED';
 
 export interface OrderItem {
   productId: string;
-  name: string;
-  price: number;
+  productName: string;
   quantity: number;
-  image?: string;
+  price: number;
 }
 
 export interface Order {
   id: string;
+  userId: string;
   items: OrderItem[];
-  subtotal: number;
-  shipping: number;
-  tax: number;
-  total: number;
+  totalAmount: number;
   status: OrderStatus;
-  shippingAddress: {
-    firstName: string;
-    lastName: string;
-    address: string;
-    city: string;
-    state: string;
-    zip: string;
-    country: string;
-  };
-  paymentMethod: string;
+  shippingAddress: string;
+  notes?: string;
   createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderStatusResponse {
+  orderId: string;
+  status: OrderStatus;
+  statusMessage?: string;
   updatedAt: string;
 }
 
@@ -37,32 +40,37 @@ export interface CreateOrderDto {
     productId: string;
     quantity: number;
   }>;
-  shippingAddress: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    address: string;
-    city: string;
-    state: string;
-    zip: string;
-    country: string;
-  };
-  paymentMethod: {
-    cardNumber: string;
-    expiry: string;
-    cvc: string;
-    nameOnCard: string;
-  };
+  shippingAddress: string;
+  notes?: string;
+}
+
+export interface ListOrdersResponse {
+  orders: Order[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface OrderFilters {
+  page?: number;
+  limit?: number;
+  status?: OrderStatus;
 }
 
 export const ordersApi = {
-  getAll: (page?: number, pageSize?: number) =>
-    apiClient.get<PaginatedResponse<Order>>('/api/orders', { page, pageSize }),
+  getAll: (filters?: OrderFilters) =>
+    apiClient.get<ListOrdersResponse>(
+      '/orders',
+      filters as Record<string, string | number | undefined>
+    ),
 
-  getById: (id: string) => apiClient.get<Order>(`/api/orders/${id}`),
+  getById: (id: string) => apiClient.get<Order>(`/orders/${id}`),
 
-  create: (data: CreateOrderDto) => apiClient.post<Order>('/api/orders', data),
+  getStatus: (id: string) => apiClient.get<OrderStatusResponse>(`/orders/${id}/status`),
 
-  cancel: (id: string) => apiClient.post<Order>(`/api/orders/${id}/cancel`),
+  create: (data: CreateOrderDto) => apiClient.post<Order>('/orders', data),
+
+  cancel: (id: string, reason?: string) =>
+    apiClient.post<Order>(`/orders/${id}/cancel`, { reason }),
 };

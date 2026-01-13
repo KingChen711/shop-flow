@@ -1,16 +1,15 @@
-import { apiClient, type PaginatedResponse, type PaginationParams } from './client';
+import { apiClient, type PaginationParams } from './client';
 
 export interface Product {
   id: string;
   name: string;
   description: string;
-  sku: string;
   price: number;
   categoryId: string;
-  category?: Category;
-  stock: number;
-  status: 'active' | 'draft' | 'archived';
-  images: string[];
+  categoryName?: string;
+  imageUrls: string[];
+  attributes: Array<{ key: string; value: string }>;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -18,46 +17,76 @@ export interface Product {
 export interface Category {
   id: string;
   name: string;
-  slug: string;
+  description?: string;
   parentId?: string;
+  createdAt?: string;
 }
 
 export interface CreateProductDto {
   name: string;
   description: string;
-  sku: string;
   price: number;
   categoryId: string;
-  stock: number;
-  status?: 'active' | 'draft' | 'archived';
-  images?: string[];
+  imageUrls?: string[];
+  attributes?: Array<{ key: string; value: string }>;
+  isActive?: boolean;
 }
 
 export type UpdateProductDto = Partial<CreateProductDto>;
 
+export interface CreateCategoryDto {
+  name: string;
+  description?: string;
+  parentId?: string;
+}
+
+export type UpdateCategoryDto = Partial<CreateCategoryDto>;
+
 export interface ProductFilters extends PaginationParams {
   search?: string;
   categoryId?: string;
-  status?: string;
+  isActive?: boolean;
   minPrice?: number;
   maxPrice?: number;
 }
 
+export interface ListProductsResponse {
+  products: Product[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface ListCategoriesResponse {
+  categories: Category[];
+}
+
 export const productsApi = {
   getAll: (filters?: ProductFilters) =>
-    apiClient.get<PaginatedResponse<Product>>(
-      '/api/products',
+    apiClient.get<ListProductsResponse>(
+      '/products',
       filters as Record<string, string | number | undefined>
     ),
 
-  getById: (id: string) => apiClient.get<Product>(`/api/products/${id}`),
+  getById: (id: string) => apiClient.get<Product>(`/products/${id}`),
 
-  create: (data: CreateProductDto) => apiClient.post<Product>('/api/products', data),
+  create: (data: CreateProductDto) => apiClient.post<Product>('/products', data),
 
-  update: (id: string, data: UpdateProductDto) =>
-    apiClient.patch<Product>(`/api/products/${id}`, data),
+  update: (id: string, data: UpdateProductDto) => apiClient.patch<Product>(`/products/${id}`, data),
 
-  delete: (id: string) => apiClient.delete<void>(`/api/products/${id}`),
+  delete: (id: string) => apiClient.delete<void>(`/products/${id}`),
 
-  getCategories: () => apiClient.get<Category[]>('/api/categories'),
+  // Categories
+  getCategories: (parentId?: string) =>
+    apiClient.get<ListCategoriesResponse>('/categories', parentId ? { parentId } : undefined),
+
+  getCategoryById: (id: string) => apiClient.get<Category>(`/categories/${id}`),
+
+  createCategory: (data: CreateCategoryDto) => apiClient.post<Category>('/categories', data),
+
+  updateCategory: (id: string, data: UpdateCategoryDto) =>
+    apiClient.patch<Category>(`/categories/${id}`, data),
+
+  deleteCategory: (id: string) => apiClient.delete<void>(`/categories/${id}`),
 };

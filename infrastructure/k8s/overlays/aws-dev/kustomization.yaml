@@ -1,0 +1,288 @@
+# AWS Development Environment Overlay
+# Uses AWS managed services (RDS, ElastiCache, MSK)
+#
+# COST OPTIMIZATION STRATEGY:
+# - Single replica deployments (1 pod per service)
+# - Reduced resource limits (t3.micro compatible: 1 vCPU, 1GB RAM)
+# - CPU requests: 50m, limits: 200m per container
+# - Memory requests: 64Mi, limits: 256Mi per container
+# - Uses AWS free tier eligible services where possible:
+#   * RDS db.t3.micro (PostgreSQL)
+#   * ElastiCache cache.t3.micro (Redis)
+#   * MSK kafka.t3.small (minimum for MSK)
+# - ECR for container images (pay per GB stored/transferred)
+#
+# Total estimated monthly cost: ~$50-80 USD
+# (Primarily MSK ~$40/month, RDS ~$15/month, ElastiCache ~$10/month)
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: shopflow
+
+resources:
+  - ../../base
+
+labels:
+  - pairs:
+      environment: aws-development
+      deployment-type: aws-managed
+
+# Patches for AWS environment
+patches:
+  # Remove local infrastructure components (use AWS managed services)
+  # Redis components
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: redis
+        namespace: shopflow
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: redis
+        namespace: shopflow
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: redis-pvc
+        namespace: shopflow
+
+  # Kafka components
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: kafka
+        namespace: shopflow
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: kafka
+        namespace: shopflow
+
+  # Zookeeper components
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: zookeeper
+        namespace: shopflow
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: zookeeper
+        namespace: shopflow
+
+  # Elasticsearch components
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: elasticsearch
+        namespace: shopflow
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: elasticsearch
+        namespace: shopflow
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: elasticsearch-pvc
+        namespace: shopflow
+
+  # Update common-config to use AWS managed services (cost-optimized)
+  # RDS: db.t3.micro (free tier eligible, 1 vCPU, 1GB RAM)
+  # ElastiCache: cache.t3.micro (1 vCPU, 0.5GB RAM)
+  # MSK: kafka.t3.small (minimum instance type for MSK)
+  # Note: Terraform will create ConfigMaps with actual endpoints
+  - patch: |-
+      - op: replace
+        path: /data/NODE_ENV
+        value: "production"
+      - op: replace
+        path: /data/LOG_LEVEL
+        value: "info"
+    target:
+      kind: ConfigMap
+      name: common-config
+
+  # Update service-specific ConfigMaps to use AWS managed services
+  # Note: Terraform will patch these ConfigMaps after Kustomize creates them
+  - patch: |-
+      - op: add
+        path: /data/DATABASE_SSL_MODE
+        value: "disable"
+    target:
+      kind: ConfigMap
+      name: user-service-config
+
+  - patch: |-
+      - op: add
+        path: /data/DATABASE_SSL_MODE
+        value: "disable"
+    target:
+      kind: ConfigMap
+      name: product-service-config
+
+  - patch: |-
+      - op: add
+        path: /data/DB_SSL_MODE
+        value: "disable"
+    target:
+      kind: ConfigMap
+      name: order-service-config
+
+  - patch: |-
+      - op: add
+        path: /data/DB_SSL_MODE
+        value: "disable"
+    target:
+      kind: ConfigMap
+      name: inventory-service-config
+
+  - patch: |-
+      - op: add
+        path: /data/DB_SSL_MODE
+        value: "disable"
+    target:
+      kind: ConfigMap
+      name: payment-service-config
+
+  - patch: |-
+      - op: add
+        path: /data/DB_SSL_MODE
+        value: "disable"
+    target:
+      kind: ConfigMap
+      name: notification-service-config
+
+  # Remove OpenSearch patch - Terraform will create ConfigMap with actual endpoint
+
+  # Update image tags to use ECR repositories (cost-optimized)
+  # ECR pricing: $0.10 per GB-month for storage, $0.09 per GB for data transfer
+  # Using 'latest' tag for development simplicity
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/user-service:latest"
+    target:
+      kind: Deployment
+      name: user-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/product-service:latest"
+    target:
+      kind: Deployment
+      name: product-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/order-service:latest"
+    target:
+      kind: Deployment
+      name: order-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/inventory-service:latest"
+    target:
+      kind: Deployment
+      name: inventory-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/payment-service:latest"
+    target:
+      kind: Deployment
+      name: payment-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/notification-service:latest"
+    target:
+      kind: Deployment
+      name: notification-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/search-service:latest"
+    target:
+      kind: Deployment
+      name: search-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/cart-service:latest"
+    target:
+      kind: Deployment
+      name: cart-service
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "396913718981.dkr.ecr.us-east-1.amazonaws.com/shopflow/api-gateway:latest"
+    target:
+      kind: Deployment
+      name: api-gateway
+
+  # Reduce replicas for dev environment (cost optimization)
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+    target:
+      kind: Deployment
+      labelSelector: 'app.kubernetes.io/part-of=shopflow-platform'
+
+  # Optimize resource limits for cost efficiency (t3.micro compatible)
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+    target:
+      kind: Deployment
+      labelSelector: 'app.kubernetes.io/part-of=shopflow-platform'
+
+  # Add cost optimization annotations
+  - patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          cost-optimization: "true"
+          environment: "learning"
+          aws-instance-type: "t3.micro"
+    target:
+      kind: Deployment
+      labelSelector: 'app.kubernetes.io/part-of=shopflow-platform'

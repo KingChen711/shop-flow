@@ -13,13 +13,13 @@ variable "aws_region" {
 }
 
 variable "environment" {
-  description = "Environment name (dev, staging, prod)"
+  description = "Environment name (dev, aws-dev)"
   type        = string
   default     = "dev"
 
   validation {
-    condition     = contains(["dev", "staging", "prod"], var.environment)
-    error_message = "Environment must be one of: dev, staging, prod."
+    condition     = contains(["dev", "aws-dev"], var.environment)
+    error_message = "Environment must be one of: dev, aws-dev."
   }
 }
 
@@ -156,4 +156,32 @@ variable "msk_ebs_volume_size" {
   description = "EBS volume size for each broker in GB"
   type        = number
   default     = 100
+}
+
+# ============================================
+# OpenSearch Configuration
+# ============================================
+
+variable "opensearch_instance_type" {
+  description = "OpenSearch instance type"
+  type        = string
+  default     = "t3.small.search"
+}
+
+variable "opensearch_instance_count" {
+  description = "Number of OpenSearch instances"
+  type        = number
+  default     = 1
+}
+
+variable "opensearch_volume_size" {
+  description = "EBS volume size for OpenSearch in GB"
+  type        = number
+  default     = 20
+}
+
+variable "opensearch_engine_version" {
+  description = "OpenSearch engine version"
+  type        = string
+  default     = "OpenSearch_2.11"
 }

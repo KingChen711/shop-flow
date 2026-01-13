@@ -124,58 +124,65 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private[count.index].id
 }
 
-# VPC Flow Logs (optional but recommended)
-resource "aws_flow_log" "main" {
-  iam_role_arn    = aws_iam_role.flow_log.arn
-  log_destination = aws_cloudwatch_log_group.flow_log.arn
-  traffic_type    = "ALL"
-  vpc_id          = aws_vpc.main.id
+# VPC Flow Logs removed for development simplicity
+# Uncomment below if needed for production monitoring
 
-  tags = merge(var.tags, {
-    Name = "${var.name_prefix}-flow-log"
-  })
-}
+# resource "aws_flow_log" "main" {
+#   iam_role_arn    = aws_iam_role.flow_log.arn
+#   log_destination = aws_cloudwatch_log_group.flow_log.arn
+#   traffic_type    = "ALL"
+#   vpc_id          = aws_vpc.main.id
 
-resource "aws_cloudwatch_log_group" "flow_log" {
-  name              = "/aws/vpc/${var.name_prefix}-flow-logs"
-  retention_in_days = 7
+#   tags = merge(var.tags, {
+#     Name = "${var.name_prefix}-flow-log"
+#   })
+# }
 
-  tags = var.tags
-}
+# resource "aws_cloudwatch_log_group" "flow_log" {
+#   name              = "/aws/vpc/${var.name_prefix}-flow-logs"
+#   retention_in_days = 7
 
-resource "aws_iam_role" "flow_log" {
-  name = "${var.name_prefix}-vpc-flow-log-role"
+#   tags = var.tags
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Principal = {
-        Service = "vpc-flow-logs.amazonaws.com"
-      }
-    }]
-  })
+#   lifecycle {
+#     prevent_destroy = false
+#     ignore_changes  = [retention_in_days]
+#   }
+# }
 
-  tags = var.tags
-}
+# resource "aws_iam_role" "flow_log" {
+#   name = "${var.name_prefix}-vpc-flow-log-role"
 
-resource "aws_iam_role_policy" "flow_log" {
-  name = "${var.name_prefix}-vpc-flow-log-policy"
-  role = aws_iam_role.flow_log.id
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [{
+#       Action = "sts:AssumeRole"
+#       Effect = "Allow"
+#       Principal = {
+#         Service = "vpc-flow-logs.amazonaws.com"
+#       }
+#     }]
+#   })
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents",
-        "logs:DescribeLogGroups",
-        "logs:DescribeLogStreams"
-      ]
-      Effect   = "Allow"
-      Resource = "*"
-    }]
-  })
-}
+#   tags = var.tags
+# }
+
+# resource "aws_iam_role_policy" "flow_log" {
+#   name = "${var.name_prefix}-vpc-flow-log-policy"
+#   role = aws_iam_role.flow_log.id
+
+#   policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [{
+#       Action = [
+#         "logs:CreateLogGroup",
+#         "logs:CreateLogStream",
+#         "logs:PutLogEvents",
+#         "logs:DescribeLogGroups",
+#         "logs:DescribeLogStreams"
+#       ]
+#       Effect   = "Allow"
+#       Resource = "*"
+#     }]
+#   })
+# }

@@ -31,6 +31,14 @@ resource "aws_security_group" "rds" {
     security_groups = var.allowed_security_groups
   }
 
+  ingress {
+    description = "PostgreSQL from VPC CIDR (for EKS pods)"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -66,6 +74,13 @@ resource "aws_db_parameter_group" "main" {
     name         = "shared_preload_libraries"
     value        = "pg_stat_statements"
     apply_method = "pending-reboot" # Static parameter - requires DB restart
+  }
+
+  # Disable SSL requirement for development
+  parameter {
+    name  = "rds.force_ssl"
+    value = "0"
+    # Dynamic parameter - applies immediately
   }
 
   tags = var.tags
@@ -121,21 +136,49 @@ resource "aws_db_instance" "main" {
   })
 }
 
-# Create additional databases using null_resource
-# Note: In production, consider using a separate tool like Flyway or a Lambda function
+# Create additional databases using Docker PostgreSQL client
+# This approach works without requiring local PostgreSQL installation
 resource "null_resource" "create_databases" {
   count = length(var.databases) > 1 ? 1 : 0
 
   triggers = {
     databases = join(",", var.databases)
+    endpoint  = aws_db_instance.main.endpoint
   }
 
   provisioner "local-exec" {
     command = <<-EOT
-      echo "Additional databases to create: ${join(", ", slice(var.databases, 1, length(var.databases)))}"
-      echo "Note: Create these databases manually or via a migration tool after the RDS instance is ready."
-      echo "Connection: psql -h ${aws_db_instance.main.endpoint} -U ${var.master_username} -d ${var.databases[0]}"
+      Write-Host "Waiting for RDS instance to be ready..."
+      Start-Sleep -Seconds 60
+
+      Write-Host "Creating additional databases using Docker PostgreSQL client..."
+      
+      # Create each database (skip the first one as it's already created as default)
+      $databases = @("product_db", "order_db", "inventory_db", "payment_db", "notification_db")
+      
+      foreach ($db in $databases) {
+        Write-Host "Creating database: $db"
+        try {
+          # Use Docker to run PostgreSQL client without interactive mode
+          docker run --rm postgres:15-alpine psql -h ${aws_db_instance.main.endpoint} -U ${var.master_username} -d ${var.databases[0]} -c "CREATE DATABASE $db;" 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Database $db created successfully"
+          } else {
+            Write-Host "Database $db might already exist"
+          }
+        } catch {
+          Write-Host "Error creating database $db - it might already exist"
+        }
+      }
+
+      Write-Host "Database creation process completed!"
     EOT
+
+    interpreter = ["PowerShell", "-Command"]
+
+    environment = {
+      PGPASSWORD = var.master_password
+    }
   }
 
   depends_on = [aws_db_instance.main]

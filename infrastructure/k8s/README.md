@@ -17,12 +17,9 @@ k8s/
 │   ├── dev/                 # Development: Postgres in K8s
 │   │   ├── kustomization.yaml
 │   │   └── databases/       # PostgreSQL StatefulSets
-│   ├── staging/             # Staging: AWS RDS
-│   │   ├── kustomization.yaml
-│   │   └── secrets/         # RDS connection configs
-│   └── production/          # Production: AWS RDS with HA
+│   └── aws-dev/             # AWS Development: AWS managed services
 │       ├── kustomization.yaml
-│       └── secrets/         # RDS connection configs (use External Secrets)
+│       └── secrets/         # AWS service connection configs
 └── monitoring/              # Prometheus, Grafana, Jaeger, ELK
 ```
 
@@ -38,47 +35,43 @@ kubectl apply -k overlays/dev/
 kubectl get pods -n shopflow -w
 ```
 
-### Staging (K8s with AWS RDS)
+### AWS Development (K8s with AWS managed services)
 
 ```bash
-# First, update RDS endpoints from Terraform output
-# Edit: overlays/staging/secrets/rds-services.yaml
+# First, ensure AWS services are provisioned via Terraform
+# Update AWS service endpoints if needed
+# Edit: overlays/aws-dev/secrets/aws-services.yaml
 
-# Apply staging overlay
-kubectl apply -k overlays/staging/
-```
+# Apply aws-dev overlay
+kubectl apply -k overlays/aws-dev/
 
-### Production (K8s with AWS RDS + HA)
-
-```bash
-# IMPORTANT: Use External Secrets Operator for credentials
-# Never commit real credentials to Git!
-
-# Apply production overlay
-kubectl apply -k overlays/production/
+# Verify deployment
+kubectl get pods -n shopflow -w
 ```
 
 ## Environment Differences
 
-| Feature    | Dev             | Staging | Production         |
-| ---------- | --------------- | ------- | ------------------ |
-| Database   | Postgres in K8s | AWS RDS | AWS RDS (Multi-AZ) |
-| Replicas   | 1               | 2       | 3                  |
-| Resources  | Low             | Medium  | High               |
-| Log Level  | debug           | info    | warn               |
-| Image Tags | latest          | latest  | versioned (v1.0.0) |
+| Feature       | Dev               | AWS-Dev                      |
+| ------------- | ----------------- | ---------------------------- |
+| Database      | Postgres in K8s   | AWS RDS (db.t3.micro)        |
+| Cache         | Redis in K8s      | ElastiCache (cache.t3.micro) |
+| Message Queue | Kafka in K8s      | MSK or Kafka in K8s          |
+| Replicas      | 1                 | 1                            |
+| Resources     | Low               | Low (cost optimized)         |
+| Log Level     | debug             | info                         |
+| Image Source  | Local/DockerHub   | ECR                          |
+| Purpose       | Local development | AWS learning environment     |
 
-## Updating RDS Endpoints
+## Updating AWS Service Endpoints
 
-After running Terraform, update the RDS endpoints:
+After running Terraform for AWS resources, update the service endpoints:
 
 ```bash
-# Get RDS endpoints from Terraform
+# Get AWS service endpoints from Terraform
 cd infrastructure/terraform
-terraform output rds_endpoints
+terraform output aws_service_endpoints
 
-# Update the ExternalName services in overlays/staging/secrets/rds-services.yaml
-# and overlays/production/secrets/rds-services.yaml
+# Update the ExternalName services in overlays/aws-dev/secrets/aws-services.yaml
 ```
 
 ## Monitoring

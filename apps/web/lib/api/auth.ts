@@ -6,7 +6,10 @@ export interface User {
   firstName: string;
   lastName: string;
   phone?: string;
+  isActive: boolean;
+  roles: string[];
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface LoginDto {
@@ -19,23 +22,21 @@ export interface RegisterDto {
   password: string;
   firstName: string;
   lastName: string;
+  phone?: string;
 }
 
 export interface AuthResponse {
-  user: User;
   accessToken: string;
   refreshToken: string;
+  expiresIn: number;
+  user: User;
 }
 
 export const authApi = {
-  login: (data: LoginDto) => apiClient.post<AuthResponse>('/api/auth/login', data),
+  login: (data: LoginDto) => apiClient.post<AuthResponse>('/auth/login', data),
 
-  register: (data: RegisterDto) => apiClient.post<AuthResponse>('/api/auth/register', data),
-
-  logout: () => apiClient.post<void>('/api/auth/logout'),
-
-  me: () => apiClient.get<User>('/api/auth/me'),
+  register: (data: RegisterDto) => apiClient.post<AuthResponse>('/auth/register', data),
 
   refreshToken: (refreshToken: string) =>
-    apiClient.post<AuthResponse>('/api/auth/refresh', { refreshToken }),
+    apiClient.post<AuthResponse>('/auth/refresh', { refreshToken }),
 };

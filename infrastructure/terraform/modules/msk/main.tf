@@ -18,11 +18,27 @@ resource "aws_security_group" "msk" {
   }
 
   ingress {
+    description = "Kafka plaintext from VPC CIDR (for EKS pods)"
+    from_port   = 9092
+    to_port     = 9092
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress {
     description     = "Kafka TLS"
     from_port       = 9094
     to_port         = 9094
     protocol        = "tcp"
     security_groups = var.allowed_security_groups
+  }
+
+  ingress {
+    description = "Kafka TLS from VPC CIDR (for EKS pods)"
+    from_port   = 9094
+    to_port     = 9094
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
   }
 
   ingress {

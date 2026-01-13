@@ -54,7 +54,7 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 Create a `.env.local` file:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:6000
+NEXT_PUBLIC_API_URL=http://localhost:5000
 ```
 
 ## Project Structure

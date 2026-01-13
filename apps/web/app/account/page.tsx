@@ -1,6 +1,21 @@
+'use client';
+
 import Link from 'next/link';
-import { User, Package, Heart, Settings, MapPin, CreditCard, ChevronRight } from 'lucide-react';
+import { useTransition } from 'react';
+import {
+  User,
+  Package,
+  Heart,
+  Settings,
+  MapPin,
+  CreditCard,
+  ChevronRight,
+  LogOut,
+  Loader2,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/store/auth-store';
+import { logout } from '@/lib/auth/actions';
 
 const menuItems = [
   {
@@ -36,30 +51,42 @@ const menuItems = [
 ];
 
 export default function AccountPage() {
+  const user = useAuthStore((state) => state.user);
+  const [isPending, startTransition] = useTransition();
+
+  const handleLogout = () => {
+    startTransition(async () => {
+      await logout();
+    });
+  };
+
+  const displayName = user ? `${user.firstName} ${user.lastName}` : 'User';
+  const initials = user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : 'U';
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Profile Header */}
       <div className="rounded-lg border bg-card p-6">
         <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl text-primary-foreground">
-            <User className="h-8 w-8" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-xl font-semibold text-primary-foreground">
+            {initials}
           </div>
           <div>
-            <h1 className="text-2xl font-bold">John Doe</h1>
-            <p className="text-muted-foreground">john.doe@example.com</p>
+            <h1 className="text-2xl font-bold">{displayName}</h1>
+            <p className="text-muted-foreground">{user?.email}</p>
           </div>
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           <div className="rounded-lg bg-muted p-4 text-center">
-            <p className="text-2xl font-bold">12</p>
+            <p className="text-2xl font-bold">-</p>
             <p className="text-sm text-muted-foreground">Total Orders</p>
           </div>
           <div className="rounded-lg bg-muted p-4 text-center">
-            <p className="text-2xl font-bold">3</p>
+            <p className="text-2xl font-bold">-</p>
             <p className="text-sm text-muted-foreground">Wishlist Items</p>
           </div>
           <div className="rounded-lg bg-muted p-4 text-center">
-            <p className="text-2xl font-bold">$1,234</p>
+            <p className="text-2xl font-bold">-</p>
             <p className="text-sm text-muted-foreground">Total Spent</p>
           </div>
         </div>
@@ -87,8 +114,18 @@ export default function AccountPage() {
 
       {/* Sign Out */}
       <div className="mt-8">
-        <Button variant="outline" className="w-full">
-          Sign Out
+        <Button variant="outline" className="w-full" onClick={handleLogout} disabled={isPending}>
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Signing out...
+            </>
+          ) : (
+            <>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </>
+          )}
         </Button>
       </div>
     </div>

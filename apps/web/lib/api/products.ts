@@ -1,49 +1,76 @@
-import { apiClient, type PaginatedResponse } from './client';
+import { apiClient } from './client';
 
+// Product type matching backend API Gateway response
 export interface Product {
   id: string;
   name: string;
   description: string;
   price: number;
+  categoryId: string;
+  categoryName?: string;
+  imageUrls: string[];
+  attributes: Array<{ key: string; value: string }>;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Extended product for display (adds computed fields)
+export interface ProductDisplay extends Product {
   originalPrice?: number;
-  images: string[];
-  category: string;
-  rating: number;
-  reviewCount: number;
-  inStock: boolean;
-  specifications?: Record<string, string>;
+  rating?: number;
+  reviewCount?: number;
+  inStock?: boolean;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  parentId?: string;
+  createdAt?: string;
 }
 
 export interface ProductFilters {
   page?: number;
-  pageSize?: number;
-  category?: string;
+  limit?: number;
+  categoryId?: string;
   minPrice?: number;
   maxPrice?: number;
   search?: string;
-  sortBy?: 'price' | 'rating' | 'newest';
+  sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+}
+
+export interface ListProductsResponse {
+  products: Product[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface ListCategoriesResponse {
+  categories: Category[];
 }
 
 export const productsApi = {
   getAll: (filters?: ProductFilters) =>
-    apiClient.get<PaginatedResponse<Product>>(
-      '/api/products',
+    apiClient.get<ListProductsResponse>(
+      '/products',
       filters as Record<string, string | number | undefined>
     ),
 
-  getById: (id: string) => apiClient.get<Product>(`/api/products/${id}`),
+  getById: (id: string) => apiClient.get<Product>(`/products/${id}`),
 
-  getByCategory: (category: string, filters?: ProductFilters) =>
-    apiClient.get<PaginatedResponse<Product>>(
-      `/api/products/category/${category}`,
-      filters as Record<string, string | number | undefined>
-    ),
+  search: (query: string, filters?: Omit<ProductFilters, 'search'>) =>
+    apiClient.get<ListProductsResponse>('/search', {
+      q: query,
+      ...filters,
+    } as Record<string, string | number | undefined>),
 
-  search: (query: string) =>
-    apiClient.get<PaginatedResponse<Product>>('/api/products/search', { q: query }),
+  getCategories: (parentId?: string) =>
+    apiClient.get<ListCategoriesResponse>('/categories', parentId ? { parentId } : undefined),
 
-  getFeatured: () => apiClient.get<Product[]>('/api/products/featured'),
-
-  getRelated: (productId: string) => apiClient.get<Product[]>(`/api/products/${productId}/related`),
+  getCategoryById: (id: string) => apiClient.get<Category>(`/categories/${id}`),
 };

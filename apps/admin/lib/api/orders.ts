@@ -1,41 +1,39 @@
-import { apiClient, type PaginatedResponse, type PaginationParams } from './client';
+import { apiClient, type PaginationParams } from './client';
 
-export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+export type OrderStatus =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'PROCESSING'
+  | 'SHIPPED'
+  | 'DELIVERED'
+  | 'CANCELLED'
+  | 'FAILED';
 
 export interface OrderItem {
-  id: string;
   productId: string;
   productName: string;
   quantity: number;
-  unitPrice: number;
-  totalPrice: number;
+  price: number;
 }
 
 export interface Order {
   id: string;
-  customerId: string;
-  customer: {
-    id: string;
-    name: string;
-    email: string;
-  };
+  userId: string;
+  userEmail?: string;
+  userName?: string;
   items: OrderItem[];
-  subtotal: number;
-  tax: number;
-  shipping: number;
-  total: number;
+  totalAmount: number;
   status: OrderStatus;
-  paymentMethod: string;
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
-  shippingAddress: {
-    street: string;
-    city: string;
-    state: string;
-    postalCode: string;
-    country: string;
-  };
+  shippingAddress: string;
   notes?: string;
   createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderStatusResponse {
+  orderId: string;
+  status: OrderStatus;
+  statusMessage?: string;
   updatedAt: string;
 }
 
@@ -47,36 +45,44 @@ export interface UpdateOrderStatusDto {
 export interface OrderFilters extends PaginationParams {
   search?: string;
   status?: OrderStatus;
-  paymentStatus?: string;
+  userId?: string;
   startDate?: string;
   endDate?: string;
-  customerId?: string;
+}
+
+export interface ListOrdersResponse {
+  orders: Order[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface OrderStats {
-  pending: number;
-  processing: number;
-  shipped: number;
-  delivered: number;
-  cancelled: number;
   totalOrders: number;
+  pendingOrders: number;
+  processingOrders: number;
+  completedOrders: number;
+  cancelledOrders: number;
   totalRevenue: number;
 }
 
 export const ordersApi = {
   getAll: (filters?: OrderFilters) =>
-    apiClient.get<PaginatedResponse<Order>>(
-      '/api/orders',
+    apiClient.get<ListOrdersResponse>(
+      '/orders',
       filters as Record<string, string | number | undefined>
     ),
 
-  getById: (id: string) => apiClient.get<Order>(`/api/orders/${id}`),
+  getById: (id: string) => apiClient.get<Order>(`/orders/${id}`),
+
+  getStatus: (id: string) => apiClient.get<OrderStatusResponse>(`/orders/${id}/status`),
 
   updateStatus: (id: string, data: UpdateOrderStatusDto) =>
-    apiClient.patch<Order>(`/api/orders/${id}/status`, data),
+    apiClient.patch<Order>(`/orders/${id}/status`, data),
 
   cancel: (id: string, reason?: string) =>
-    apiClient.post<Order>(`/api/orders/${id}/cancel`, { reason }),
+    apiClient.post<Order>(`/orders/${id}/cancel`, { reason }),
 
-  getStats: () => apiClient.get<OrderStats>('/api/orders/stats'),
+  getStats: () => apiClient.get<OrderStats>('/orders/stats'),
 };

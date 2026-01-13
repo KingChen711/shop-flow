@@ -155,7 +155,7 @@ spec:
   selector:
     app: api-gateway
   ports:
-    - port: 6000
-      targetPort: 6000
+    - port: 5000
+      targetPort: 5000
       protocol: TCP
       name: http

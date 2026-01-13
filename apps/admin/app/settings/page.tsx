@@ -114,7 +114,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">API Endpoint</label>
-                <Input defaultValue="http://localhost:6000" />
+                <Input defaultValue="http://localhost:5000" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">API Key</label>

@@ -22,7 +22,7 @@ spec:
           image: shopflow/api-gateway:latest
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 6000
+            - containerPort: 5000
               name: http
           envFrom:
             - configMapRef:
@@ -44,13 +44,13 @@ spec:
               memory: 1Gi
           readinessProbe:
             tcpSocket:
-              port: 6000
+              port: 5000
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
           livenessProbe:
             tcpSocket:
-              port: 6000
+              port: 5000
             initialDelaySeconds: 30
             periodSeconds: 30
             timeoutSeconds: 5

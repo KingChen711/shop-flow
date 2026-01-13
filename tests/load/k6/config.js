@@ -4,7 +4,7 @@
 
 export const config = {
   // Base URL for API Gateway
-  baseUrl: __ENV.BASE_URL || 'http://localhost:6000',
+  baseUrl: __ENV.BASE_URL || 'http://localhost:5000',
 
   // Default test duration
   duration: __ENV.DURATION || '5m',

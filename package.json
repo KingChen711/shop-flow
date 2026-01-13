@@ -34,10 +34,13 @@
     "monitoring:kibana": "kubectl port-forward svc/kibana 5601:5601 -n monitoring",
     "load-test:health": "k6 run tests/load/k6/scenarios/health-check.js",
     "load-test:browse": "k6 run tests/load/k6/scenarios/product-browse.js",
-    "load-test:stress": "k6 run tests/load/k6/scenarios/stress-test.js"
+    "load-test:stress": "k6 run tests/load/k6/scenarios/stress-test.js",
+    "seed": "npx tsx scripts/seed-products.ts",
+    "seed:products": "npx tsx scripts/seed-products.ts"
   },
   "devDependencies": {
     "prettier": "^3.7.4",
+    "tsx": "^4.7.0",
     "turbo": "^2.6.3",
     "typescript": "5.9.2"
   },
